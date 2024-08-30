@@ -1,0 +1,23 @@
+<%- include('header') %>
+
+<h6 class="py-4 px-20">Signin as a New User</h6>
+<form class="px-40 py-4" action="/save" method="post">
+
+    
+    <div class="py-3">
+        <label for="email">Email</label>
+        <input type="email" name="email" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+    </div>
+    <div class="py-3">
+        <label for="password">Password</label>
+        <input type="password" name="password" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+    </div>
+    <div class="flex items-center justify-between py-3">
+        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Login</button>
+        <a href="/forgot-password" class="text-blue-600 hover:text-blue-800 text-sm">Forgot Password?</a>
+    </div>
+</form>
+
+<div class="px-20">
+    <%- include('footer.ejs') %>
+</div>

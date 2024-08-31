@@ -34,7 +34,6 @@ module.exports = (sequelize, DataTypes) => {
 
         return courses.map((course) => ({
           title: course.name,
-          description: course.description,
           educatorName: course.educator ? course.educator.fullName : "Unknown",
         }));
       } catch (error) {

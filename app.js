@@ -1,7 +1,8 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 const express = require("express");
 const app = express();
-const { User, Course } = require("./models");
+const { User, Course, Chapter, Page } = require("./models");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
@@ -24,6 +25,7 @@ const session = require("express-session");
 const LocalStrategy = require("passport-local");
 const { where } = require("sequelize");
 const { error } = require("console");
+const { title } = require("process");
 
 app.use(
   session({
@@ -308,19 +310,19 @@ app.get("/test", (request, response) => {
 });
 
 app.get(
-  "/courses/new",
+  "/new-course",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   (request, response) => {
     // Logic
-    return response.render("courses/new", {
+    return response.render("new-course", {
       title: "Create a New Course",
     });
   },
 );
 
 app.post(
-  "/courses/new",
+  "/new-course",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
@@ -331,13 +333,114 @@ app.post(
         name: request.body.course,
         educatorId: request.user.id,
       });
+      console.log("Course created with ID:", course.id);
       request.flash("done", "Course has been created successfully.");
-      response.redirect("/courses/new");
-      console.log("User created:", Course.dataValues);
+      response.redirect(`/courses/${course.id}/chapters/new`);
     } catch (error) {
       console.error("Course creation error:", error);
       request.flash("error", "An error occurred. Please try again.");
       response.redirect("/courses/new");
+    }
+  },
+);
+
+app.get(
+  "/courses/:courseId/chapters/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    try {
+      const { courseId } = request.params;
+      const course = await Course.findByPk(courseId);
+
+      if (!course) {
+        request.flash("error", "Course not found.");
+        return response.redirect("/courses/new");
+      }
+
+      response.render("new-chapter", { course, title: "Create Chapter" });
+    } catch (error) {
+      console.error("Error loading chapter creation page:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.post(
+  "/courses/:courseId/chapters/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    try {
+      const { courseId } = request.params;
+      const chapter = await Chapter.create({
+        title: request.body.title,
+        description: request.body.description,
+        courseId,
+      });
+
+      request.flash("done", "Chapter has been added successfully.");
+      response.redirect(
+        `/courses/${courseId}/chapters/${chapter.id}/pages/new`,
+      );
+    } catch (error) {
+      console.error("Chapter creation error:", error);
+      request.flash("error", "An error occurred. Please try again.");
+      response.redirect(`/courses/${courseId}/chapters/new`);
+    }
+  },
+);
+
+app.get(
+  "/courses/:courseId/chapters/:chapterId/pages/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    try {
+      const { courseId, chapterId } = request.params;
+      const chapter = await Chapter.findOne({
+        where: { id: chapterId, courseId },
+        include: Course,
+      });
+
+      if (!chapter) {
+        request.flash("error", "Chapter not found.");
+        return response.redirect(`/courses/${courseId}/chapters/new`);
+      }
+
+      // Render the page creation form, passing the chapter and course data
+      response.render("new-page", {
+        course: chapter.Course,
+        chapter,
+        title: "Add Page",
+      });
+    } catch (error) {
+      console.error("Error loading page creation form:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.post(
+  "/courses/:courseId/chapters/:chapterId/pages/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    try {
+      const { courseId, chapterId } = request.params;
+      console.log(`course id: ${courseId}, chapter id:${chapterId}`);
+      await Page.create({
+        title: request.body.title,
+        content: request.body.content,
+        chapterId,
+      });
+
+      request.flash("done", "Page has been added successfully.");
+      response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
+    } catch (error) {
+      console.error("Page creation error:", error);
+      request.flash("error", "An error occurred. Please try again.");
+      // response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
     }
   },
 );

@@ -1,0 +1,26 @@
+  <%- include('header') %>
+
+<nav>
+    <a href="/educator-dashboard">Dashboard</a> > 
+    <a href="/courses/<%= course.id %>/chapters/new">Add New Chapter</a> >
+</nav>
+
+<h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
+    Add a New Chapter to <%= course.name %>
+</h1>
+
+  <form class="px-40 py-4" action="/courses/<%= course.id %>/chapters/new" method="post">
+    <%- include('flash') %>
+    
+    <div class="py-3">
+        <label for="title">Chapter Title:</label>
+        <input type="text" id="title" name="title" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+    </div>
+    <div class="py-3">
+        <label for="description">Chapter Description:</label>
+        <textarea type="description" id="description" name="description" required class="border border-gray-300 text-gray-900 rounded p-2 w-full"></textarea>
+    </div>
+    <div class="flex items-center justify-between py-3">
+        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Add Chapter</button>
+    </div>
+</form>

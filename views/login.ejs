@@ -2,11 +2,7 @@
 
 <h6 class="py-4 px-20">Log In as a New User</h6>
 <form class="px-40 py-4" action="/save" method="post">
-    <% if (messages.error) { %>
-        <div class="alert alert-danger">
-          <%= messages.error %>
-        </div>
-      <% } %>
+    <%- include('flash') %>
     
     <div class="py-3">
         <label for="email">Email</label>

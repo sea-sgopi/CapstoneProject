@@ -251,6 +251,15 @@ app.post("/change", async (request, response) => {
   }
 });
 
+app.get("/signout", (request, response, next) => {
+  request.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    response.redirect("/");
+  });
+});
+
 app.get("/test", (request, response) => {
   // Logic
   return response.render("test");

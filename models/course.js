@@ -21,6 +21,27 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "courseId",
       });
     }
+
+    static async coursesWithEducator() {
+      try {
+        const courses = await Course.findAll({
+          include: {
+            model: sequelize.models.User,
+            as: "educator",
+            attributes: ["fullName"],
+          },
+        });
+
+        return courses.map((course) => ({
+          title: course.name,
+          description: course.description,
+          educatorName: course.educator ? course.educator.fullName : "Unknown",
+        }));
+      } catch (error) {
+        console.error("Error fetching courses with educators:", error);
+        throw error;
+      }
+    }
   }
   Course.init(
     {

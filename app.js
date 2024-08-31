@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 const express = require("express");
 const app = express();
-const { User } = require("./models");
+const { User, Course } = require("./models");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
@@ -183,12 +183,32 @@ app.post(
   },
 );
 
-app.get("/educator-dashboard", (request, response) => {
-  // Logic
-  response.render("educator-dashboard", {
-    title: "Dashboard",
-  });
-});
+app.get(
+  "/educator-dashboard",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    // Logic
+    try {
+      const userId = request.user.id;
+      const username = await User.username(userId);
+      const coursesWithEducator = await Course.coursesWithEducator();
+      if (request.accepts("html")) {
+        response.render("educator-dashboard", {
+          title: "Dashboard",
+          coursesWithEducator,
+          username,
+        });
+      } else {
+        response.json({
+          coursesWithEducator,
+        });
+      }
+    } catch (error) {
+      console.error("error: ", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
 
 app.get("/student-dashboard", (request, response) => {
   // Logic

@@ -17,8 +17,14 @@ module.exports = {
       "Courses",
       [
         {
-          name: "Introduction to Programming",
-          educatorId: 2,
+          name: "Course 1",
+          educatorId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          name: "Course 2",
+          educatorId: 1,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

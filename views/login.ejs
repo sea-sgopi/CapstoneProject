@@ -1,8 +1,12 @@
 <%- include('header') %>
 
-<h6 class="py-4 px-20">Signin as a New User</h6>
+<h6 class="py-4 px-20">Log In as a New User</h6>
 <form class="px-40 py-4" action="/save" method="post">
-
+    <% if (messages.error) { %>
+        <div class="alert alert-danger">
+          <%= messages.error %>
+        </div>
+      <% } %>
     
     <div class="py-3">
         <label for="email">Email</label>
@@ -18,6 +22,6 @@
     </div>
 </form>
 
-<div class="px-20">
+<div class="px-20 py-60">
     <%- include('footer.ejs') %>
 </div>

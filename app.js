@@ -4,6 +4,7 @@ const app = express();
 const { User } = require("./models");
 const path = require("path");
 const bcrypt = require("bcrypt");
+const flash = require("connect-flash");
 
 const saltRounds = 10;
 // set EJS as view engine
@@ -21,6 +22,8 @@ const passport = require("passport");
 const connectEnsureLogin = require("connect-ensure-login");
 const session = require("express-session");
 const LocalStrategy = require("passport-local");
+const { where } = require("sequelize");
+const { error } = require("console");
 
 app.use(
   session({
@@ -81,7 +84,7 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-// middleware
+// middlewares
 
 const requireRole = (roles) => {
   return (request, response, next) => {
@@ -92,6 +95,15 @@ const requireRole = (roles) => {
     }
   };
 };
+
+// Add connect-flash middleware
+app.use(flash());
+
+// Middleware to expose flash messages to views
+app.use((request, response, next) => {
+  response.locals.messages = request.flash();
+  next();
+});
 
 // Route
 
@@ -132,16 +144,17 @@ app.post("/users", async (request, response) => {
       if (err) {
         console.log("Login error:", err);
       }
-      response.redirect("/test");
+      request.flash("success", "Account has been created successfully.");
+      response.redirect("/signup");
     });
   } catch (error) {
     console.error("User creation error:", error);
-    if (error.name === "SequelizeValidationError") {
-      const validationErrors = error.errors.map((err) => err.message);
-      response.redirect("/signup");
+    if (error.name === "SequelizeUniqueConstraintError") {
+      request.flash("error", "The email address is already in use.");
     } else {
-      response.redirect("/signup");
+      request.flash("error", "An error occurred. Please try again.");
     }
+    response.redirect("/signup");
   }
 });
 
@@ -186,6 +199,56 @@ app.get("/student-dashboard", (request, response) => {
 
 app.get("/forgot-password", (request, response) => {
   // Logic
+  response.render("forgot-password", {
+    title: "Forgot Password",
+  });
+});
+
+app.get("/change-password", (request, response) => {
+  // Logic
+  response.render("change-password", {
+    title: "Change Password",
+  });
+});
+
+app.post("/change", async (request, response) => {
+  // Logic
+  const {
+    email,
+    password,
+    "new-password": newPassword,
+    "confirm-password": confirmPassword,
+  } = request.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      request.flash("error", "User not found.");
+      return response.redirect("/change-password");
+    }
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      request.flash("error", "Incorrect current password.");
+      return response.redirect("/change-password");
+    }
+    if (newPassword !== confirmPassword) {
+      request.flash("error", "New password and confirm password do not match.");
+      return response.redirect("/change-password");
+    }
+
+    const hashedNewPwd = await bcrypt.hash(newPassword, saltRounds);
+    user.password = hashedNewPwd;
+    await user.save();
+    request.flash("success", "Password successfully updated.");
+    return response.redirect("/change-password");
+  } catch {
+    console.error("password update Failure", error);
+    request.flash(
+      "error",
+      "An error occurred while updating the password. Please try again.",
+    );
+    return response.redirect("/change-password");
+  }
 });
 
 app.get("/test", (request, response) => {

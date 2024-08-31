@@ -186,6 +186,7 @@ app.post(
 app.get(
   "/educator-dashboard",
   connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
   async (request, response) => {
     // Logic
     try {
@@ -210,12 +211,33 @@ app.get(
   },
 );
 
-app.get("/student-dashboard", (request, response) => {
-  // Logic
-  response.render("student-dashboard", {
-    title: "Dashboard",
-  });
-});
+app.get(
+  "/student-dashboard",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Student"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const userId = request.user.id;
+      const username = await User.username(userId);
+      const coursesWithEducator = await Course.coursesWithEducator();
+      if (request.accepts("html")) {
+        response.render("student-dashboard", {
+          title: "Dashboard",
+          coursesWithEducator,
+          username,
+        });
+      } else {
+        response.json({
+          coursesWithEducator,
+        });
+      }
+    } catch (error) {
+      console.error("error: ", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
 
 app.get("/forgot-password", (request, response) => {
   // Logic
@@ -259,7 +281,7 @@ app.post("/change", async (request, response) => {
     const hashedNewPwd = await bcrypt.hash(newPassword, saltRounds);
     user.password = hashedNewPwd;
     await user.save();
-    request.flash("success", "Password successfully updated.");
+    request.flash("update", "Password successfully updated.");
     return response.redirect("/change-password");
   } catch {
     console.error("password update Failure", error);
@@ -284,5 +306,40 @@ app.get("/test", (request, response) => {
   // Logic
   return response.render("test");
 });
+
+app.get(
+  "/courses/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  (request, response) => {
+    // Logic
+    return response.render("courses/new", {
+      title: "Create a New Course",
+    });
+  },
+);
+
+app.post(
+  "/courses/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      console.log("Creating A Course: ", request.body);
+      const course = await Course.create({
+        name: request.body.course,
+        educatorId: request.user.id,
+      });
+      request.flash("done", "Course has been created successfully.");
+      response.redirect("/courses/new");
+      console.log("User created:", Course.dataValues);
+    } catch (error) {
+      console.error("Course creation error:", error);
+      request.flash("error", "An error occurred. Please try again.");
+      response.redirect("/courses/new");
+    }
+  },
+);
 
 module.exports = app;

@@ -10,3 +10,15 @@
       <p>You can login by clicking <a href="login">here</a></p>
     </div>
   <% } %>
+
+  <% if (messages.update) { %>
+    <div class="alert alert-success">
+      <%= messages.update %>
+    </div>
+  <% } %>
+
+  <% if (messages.done) { %>
+    <div class="alert alert-success">
+      <%= messages.done %>
+    </div>
+  <% } %>

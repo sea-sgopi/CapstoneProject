@@ -1,0 +1,20 @@
+<%- include('../header') %>
+<h1 class="text-4xl font-bold  p-4 rounded-lg">
+    Create New Course
+</h1>
+
+<div class="px-20">
+    <a href="/..">Go Back</a>
+</div>
+
+
+<form class="px-40 py-4" action="/courses/new" method="post">
+    <%- include('../flash') %>
+    <div class="py-3">
+        <label for="course">What is the name of this Course ?</label>
+        <input type="text" name="course" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+    </div>
+    <div class="flex items-center justify-between py-3">
+        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Submit</button>
+    </div>
+</form>

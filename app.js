@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 const express = require("express");
 const app = express();
@@ -349,6 +348,7 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
+    // Logic
     try {
       const { courseId } = request.params;
       const course = await Course.findByPk(courseId);
@@ -371,6 +371,7 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
+    // Logic
     try {
       const { courseId } = request.params;
       const chapter = await Chapter.create({
@@ -384,6 +385,7 @@ app.post(
         `/courses/${courseId}/chapters/${chapter.id}/pages/new`,
       );
     } catch (error) {
+      const { courseId, chapterId } = request.params;
       console.error("Chapter creation error:", error);
       request.flash("error", "An error occurred. Please try again.");
       response.redirect(`/courses/${courseId}/chapters/new`);
@@ -396,6 +398,7 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
+    // Logic
     try {
       const { courseId, chapterId } = request.params;
       const chapter = await Chapter.findOne({
@@ -408,7 +411,6 @@ app.get(
         return response.redirect(`/courses/${courseId}/chapters/new`);
       }
 
-      // Render the page creation form, passing the chapter and course data
       response.render("new-page", {
         course: chapter.Course,
         chapter,
@@ -426,6 +428,7 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
+    // Logic
     try {
       const { courseId, chapterId } = request.params;
       console.log(`course id: ${courseId}, chapter id:${chapterId}`);
@@ -438,9 +441,10 @@ app.post(
       request.flash("done", "Page has been added successfully.");
       response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
     } catch (error) {
+      const { courseId, chapterId } = request.params;
       console.error("Page creation error:", error);
       request.flash("error", "An error occurred. Please try again.");
-      // response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
+      response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
     }
   },
 );

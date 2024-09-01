@@ -6,7 +6,9 @@
     Welcome <%= username %>!
 </h1>
 <button onclick="window.location.href='/signout';" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Signout</button>
+<button onclick="window.location.href='/enrolled-courses';" class="bg-cyan-600 hover:bg-red-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Enrolled Course</button>
 
+<%- include('flash') %>
 <%- include('all-courses') %>
 
 <div class="px-20 py-60">

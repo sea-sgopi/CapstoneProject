@@ -17,6 +17,82 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "courseId",
       });
     }
+
+    static async enrolledCourses(studentId) {
+      try {
+        const enrollments = await Enrollment.findAll({
+          where: {
+            studentId: studentId,
+          },
+          include: [
+            {
+              model: sequelize.models.Course,
+              include: [
+                {
+                  model: sequelize.models.User,
+                  as: "educator",
+                  attributes: ["fullName"],
+                },
+              ],
+            },
+          ],
+        });
+
+        return enrollments.map((enrollment) => ({
+          studentId: studentId,
+          courseId: enrollment.Course.id,
+          title: enrollment.Course.name,
+          educatorName: enrollment.Course.educator
+            ? enrollment.Course.educator.fullName
+            : "Unknown",
+        }));
+      } catch (error) {
+        console.error("Error fetching enrolled courses:", error);
+        throw error;
+      }
+    }
+
+    static async findAllEnrollments() {
+      try {
+        const enrollments = await Enrollment.findAll({
+          include: [
+            {
+              model: sequelize.models.User,
+              attributes: ["id", "fullName"],
+            },
+            {
+              model: sequelize.models.Course,
+              attributes: ["id", "name"],
+            },
+          ],
+        });
+
+        return enrollments.map((enrollment) => ({
+          studentId: enrollment.studentId,
+          studentName: enrollment.User.fullName,
+          courseId: enrollment.courseId,
+          courseName: enrollment.Course.name,
+        }));
+      } catch (error) {
+        console.error("Error fetching all enrollments:", error);
+        throw error;
+      }
+    }
+
+    static async isUserEnrolled(userId) {
+      try {
+        const enrollment = await Enrollment.findOne({
+          where: {
+            studentId: userId,
+          },
+        });
+
+        return !!enrollment;
+      } catch (error) {
+        console.error("Error checking enrollment by user ID:", error);
+        throw error;
+      }
+    }
   }
   Enrollment.init(
     {

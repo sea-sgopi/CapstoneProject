@@ -33,8 +33,10 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         return courses.map((course) => ({
+          id: course.id,
           title: course.name,
           educatorName: course.educator ? course.educator.fullName : "Unknown",
+          course: course,
         }));
       } catch (error) {
         console.error("Error fetching courses with educators:", error);

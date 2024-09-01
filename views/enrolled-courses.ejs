@@ -1,0 +1,40 @@
+<%- include('header.ejs') %>
+
+<h1>Student Dashboard</h1>
+<h1 class="text-4xl font-bold  p-4 rounded-lg">
+    Welcome <%= username %>!
+</h1>
+
+<hr>
+<h1 class="text-xl ul py-10 font-bold text-center  p-4 rounded-lg">
+    You have joined the following courses:
+</h1>
+  
+<div class="flex items-center justify-center py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <!-- Cards -->
+        <% for(var i=0; i <  courses.length; i++) { %>
+        <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white">
+            <img class="w-full" src="https://via.placeholder.com/400x200" alt="Card Image 1">
+            <div class="px-6 py-4">
+                <div class="font-bold text-xl mb-2"><%= courses[i].title %></div>
+                <div class="font-semibold text-l mb-1"><%= courses[i].educatorName %></div>
+                <p class="text-gray-700 text-base">
+                   
+                </p>
+            </div>
+            <div class="px-6 pt-4 pb-2 flex justify-between">
+                <button onclick="window.location.href='/<%= courses[i].id %>';" class="bg-cyan-500 hover:bg-cyan-600 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Continue</button>
+                <button onclick="window.location.href='/<%= courses[i].id %>';" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Completed : </button>
+            </div>
+        </div>
+        <% } %>
+       <!-- Cards -->
+    </div>
+</div>
+
+<%- include('all-courses') %>
+
+<div class="px-20 py-60">
+    <%- include('footer') %>
+</div>

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 const express = require("express");
 const app = express();
-const { User, Course, Chapter, Page } = require("./models");
+const { User, Course, Chapter, Page, Enrollment } = require("./models");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
@@ -25,6 +25,7 @@ const LocalStrategy = require("passport-local");
 const { where } = require("sequelize");
 const { error } = require("console");
 const { title } = require("process");
+const { userInfo } = require("os");
 
 app.use(
   session({
@@ -477,7 +478,7 @@ app.get(
 app.get(
   "/view-course/:courseId",
   connectEnsureLogin.ensureLoggedIn(),
-  requireRole(["Educator"]),
+  requireRole(["Educator", "Student"]),
   async (request, response) => {
     // Logic
     try {
@@ -489,7 +490,7 @@ app.get(
         chapters,
       });
     } catch (error) {
-      console.error("Error loading courses ", error);
+      console.error("Error loading courses chapters:", error);
       response.status(500).send("Internal Server Error");
     }
   },
@@ -498,7 +499,7 @@ app.get(
 app.get(
   "/view-chapter/:chapterId",
   connectEnsureLogin.ensureLoggedIn(),
-  requireRole(["Educator"]),
+  requireRole(["Educator", "Student"]),
   async (request, response) => {
     // Logic
     try {
@@ -508,7 +509,7 @@ app.get(
       });
       if (!chapter) {
         request.flash("error", "Chapter Not Found");
-        return response.redirect("/test");
+        return response.redirect(`/view-course/${chapter.courseId}`);
       }
       const pages = chapter.pages;
       console.log("Fetched pages:", pages);
@@ -527,7 +528,7 @@ app.get(
 app.get(
   "/view-page/:pageId",
   connectEnsureLogin.ensureLoggedIn(),
-  requireRole(["Educator"]),
+  requireRole(["Educator", "Student"]),
   async (request, response) => {
     // Logic
     try {
@@ -535,7 +536,7 @@ app.get(
       const pages = await Chapter.findByPk(pageId);
       if (!pages) {
         request.flash("error", "Page Not Found");
-        return response.redirect("/test");
+        return response.redirect("/dashboard");
       }
       console.log("Fetched pages:", pages);
       response.render("view-page", {
@@ -544,6 +545,79 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading pages:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/enroll/:courseId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Student"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const courseId = request.params.courseId;
+      const studentId = request.user.id;
+      if (Enrollment.isUserEnrolled(studentId)) {
+        request.flash("error", "You are already enrolled in this course.");
+        return response.redirect(`/student-dashboard`); // Need to change
+      }
+      const username = await User.username(studentId);
+      console.log("Enrolled Successfully", username);
+      await Enrollment.create({
+        studentId: studentId,
+        courseId: courseId,
+      });
+
+      request.flash("done", "Successfully enrolled in the course!");
+      response.redirect(`/student-dashboard`); // need to change
+    } catch (error) {
+      console.error("Error loading my courses:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/enrolled-courses",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Student"]),
+  async (request, response) => {
+    try {
+      const studentId = request.user.id;
+      const courses = await Enrollment.enrolledCourses(studentId);
+      const username = await User.username(studentId);
+      const coursesWithEducator = await Course.coursesWithEducator();
+      response.render("enrolled-courses", {
+        title: "My Courses",
+        courses,
+        username,
+        coursesWithEducator,
+      });
+    } catch (error) {
+      console.error("Error loading enrolled courses:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/view-reports",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    try {
+      const userId = request.user.id;
+      const courses = await Enrollment.findAllEnrollments();
+      const username = await User.username(userId);
+      response.render("view-reports", {
+        title: "Course Report",
+        courses,
+        username,
+      });
+    } catch (error) {
+      console.error("Error loading enrolled courses:", error);
       response.status(500).send("Internal Server Error");
     }
   },

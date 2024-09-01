@@ -564,7 +564,7 @@ app.get(
     try {
       const courseId = request.params.courseId;
       const studentId = request.user.id;
-      if (Enrollment.isUserEnrolled(studentId)) {
+      if (await Enrollment.isUserEnrolled(studentId, courseId)) {
         request.flash("error", "You are already enrolled in this course.");
         return response.redirect(`/student-dashboard`); // Need to change
       }
@@ -619,6 +619,7 @@ app.get(
         courses,
         username,
       });
+      console.log(`Courses : ${courses}`);
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
       response.status(500).send("Internal Server Error");

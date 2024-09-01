@@ -66,7 +66,7 @@ module.exports = (sequelize, DataTypes) => {
             },
           ],
         });
-
+        console.log("Raw Enrollments Data:", enrollments);
         return enrollments.map((enrollment) => ({
           studentId: enrollment.studentId,
           studentName: enrollment.User.fullName,
@@ -79,11 +79,12 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
 
-    static async isUserEnrolled(userId) {
+    static async isUserEnrolled(studentId, courseId) {
       try {
         const enrollment = await Enrollment.findOne({
           where: {
-            studentId: userId,
+            studentId,
+            courseId,
           },
         });
 

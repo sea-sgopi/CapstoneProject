@@ -17,6 +17,21 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "studentId",
       });
     }
+
+    static async markAsComplete(studentId, pageId) {
+      try {
+        const completion = await Completion.create({
+          studentId,
+          pageId,
+          completed: true,
+          completedAt: new Date(),
+        });
+        return completion;
+      } catch (error) {
+        console.error("Error marking page as complete:", error);
+        throw error;
+      }
+    }
   }
   Completion.init(
     {
@@ -41,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Completion",
-      timestamps: false,
+      timestamps: true,
     },
   );
   return Completion;

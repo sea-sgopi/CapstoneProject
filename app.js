@@ -1,7 +1,14 @@
 /* eslint-disable no-unused-vars */
 const express = require("express");
 const app = express();
-const { User, Course, Chapter, Page, Enrollment } = require("./models");
+const {
+  User,
+  Course,
+  Chapter,
+  Page,
+  Enrollment,
+  Completion,
+} = require("./models");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
@@ -33,6 +40,8 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hrs
     },
+    //   resave: false,
+    // saveUninitialized: false,
   }),
 );
 
@@ -102,7 +111,7 @@ const requireRole = (roles) => {
 app.use(flash());
 
 // Middleware to expose flash messages to views
-app.use((request, response, next) => {
+app.use(async (request, response, next) => {
   response.locals.messages = request.flash();
   next();
 });
@@ -134,14 +143,12 @@ app.post("/users", async (request, response) => {
     if (request.body.password === "") {
       throw new Error("Validation notEmpty on password failed");
     }
-    console.log("Creating user: ", request.body);
     const user = await User.create({
       role: request.body.role,
       fullName: request.body.fullName,
       email: request.body.email,
       password: hashedPwd,
     });
-    console.log("User created:", user.dataValues);
     request.login(user, (err) => {
       if (err) {
         console.log("Login error:", err);
@@ -223,6 +230,7 @@ app.get(
       const userId = request.user.id;
       const username = await User.username(userId);
       const coursesWithEducator = await Course.coursesWithEducator();
+      console.log(`User ID from request: ${request.user.id}`);
       if (request.accepts("html")) {
         response.render("student-dashboard", {
           title: "Dashboard",
@@ -330,12 +338,10 @@ app.post(
   async (request, response) => {
     // Logic
     try {
-      console.log("Creating A Course: ", request.body);
       const course = await Course.create({
         name: request.body.course,
         educatorId: request.user.id,
       });
-      console.log("Course created with ID:", course.id);
       request.flash("done", "Course has been created successfully.");
       response.redirect(`/courses/${course.id}/chapters/new`);
     } catch (error) {
@@ -434,7 +440,6 @@ app.post(
     // Logic
     try {
       const { courseId, chapterId } = request.params;
-      console.log(`course id: ${courseId}, chapter id:${chapterId}`);
       await Page.create({
         title: request.body.title,
         content: request.body.content,
@@ -462,7 +467,6 @@ app.get(
       const userId = request.user.id;
       const username = await User.username(userId);
       const myCourses = await Course.myCourses(userId);
-      console.log("Fetched courses:", myCourses);
       response.render("my-courses", {
         title: "My Courses",
         myCourses,
@@ -484,7 +488,6 @@ app.get(
     try {
       const courseId = request.params.courseId;
       const chapters = await Chapter.findByCourseId(courseId);
-      console.log("Fetched chapters:", chapters);
       response.render("view-course", {
         title: "View Courses",
         chapters,
@@ -512,7 +515,6 @@ app.get(
         return response.redirect(`/view-course/${chapter.courseId}`);
       }
       const pages = chapter.pages;
-      console.log("Fetched pages:", pages);
       response.render("view-chapter", {
         title: `View Chapter: ${chapter.title}`,
         chapter,
@@ -528,20 +530,22 @@ app.get(
 app.get(
   "/view-page/:pageId",
   connectEnsureLogin.ensureLoggedIn(),
-  requireRole(["Educator", "Student"]),
+  requireRole(["Student", "Educator"]),
   async (request, response) => {
     // Logic
     try {
+      const studentId = request.user.id;
       const pageId = request.params.pageId;
       const pages = await Chapter.findByPk(pageId);
+      const isCompleted = await Page.isPageCompleted(studentId, pageId);
       if (!pages) {
         request.flash("error", "Page Not Found");
         return response.redirect("/dashboard");
       }
-      console.log("Fetched pages:", pages);
       response.render("view-page", {
         title: `${pages.title}`,
         pages,
+        isCompleted,
       });
     } catch (error) {
       console.error("Error loading pages:", error);
@@ -564,12 +568,10 @@ app.get(
         return response.redirect(`/student-dashboard`); // Need to change
       }
       const username = await User.username(studentId);
-      console.log("Enrolled Successfully", username);
       await Enrollment.create({
         studentId: studentId,
         courseId: courseId,
       });
-
       request.flash("done", "Successfully enrolled in the course!");
       response.redirect(`/student-dashboard`); // need to change
     } catch (error) {
@@ -618,6 +620,29 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/mark-complete/:pageId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Student"]),
+  async (request, response) => {
+    try {
+      const studentId = request.user.id;
+      const pageId = request.params.pageId;
+      const completion = await Completion.markAsComplete(studentId, pageId);
+      if (!completion) {
+        request.flash("error", "Completion record not found");
+        return response.redirect(`/view-page/${pageId}`);
+      } else {
+        request.flash("done", "Completed");
+        return response.redirect(`/view-page/${pageId}`);
+      }
+    } catch (error) {
+      console.error("Error marking page as complete:", error);
       response.status(500).send("Internal Server Error");
     }
   },

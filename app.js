@@ -305,7 +305,9 @@ app.get("/signout", (request, response, next) => {
 
 app.get("/test", (request, response) => {
   // Logic
-  return response.render("test");
+  return response.render("test", {
+    title: "Test View",
+  });
 });
 
 app.get(
@@ -445,6 +447,104 @@ app.post(
       console.error("Page creation error:", error);
       request.flash("error", "An error occurred. Please try again.");
       response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
+    }
+  },
+);
+
+app.get(
+  "/my-courses",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const userId = request.user.id;
+      const username = await User.username(userId);
+      const myCourses = await Course.myCourses(userId);
+      console.log("Fetched courses:", myCourses);
+      response.render("my-courses", {
+        title: "My Courses",
+        myCourses,
+        username,
+      });
+    } catch (error) {
+      console.error("Error loading my courses:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/view-course/:courseId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const courseId = request.params.courseId;
+      const chapters = await Chapter.findByCourseId(courseId);
+      console.log("Fetched chapters:", chapters);
+      response.render("view-course", {
+        title: "View Courses",
+        chapters,
+      });
+    } catch (error) {
+      console.error("Error loading courses ", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/view-chapter/:chapterId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const chapterId = request.params.chapterId;
+      const chapter = await Chapter.findChapterWithPages(chapterId, {
+        include: [Page],
+      });
+      if (!chapter) {
+        request.flash("error", "Chapter Not Found");
+        return response.redirect("/test");
+      }
+      const pages = chapter.pages;
+      console.log("Fetched pages:", pages);
+      response.render("view-chapter", {
+        title: `View Chapter: ${chapter.title}`,
+        chapter,
+        pages,
+      });
+    } catch (error) {
+      console.error("Error loading pages:", error);
+      response.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/view-page/:pageId",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const pageId = request.params.pageId;
+      const pages = await Chapter.findByPk(pageId);
+      if (!pages) {
+        request.flash("error", "Page Not Found");
+        return response.redirect("/test");
+      }
+      console.log("Fetched pages:", pages);
+      response.render("view-page", {
+        title: `${pages.title}`,
+        pages,
+      });
+    } catch (error) {
+      console.error("Error loading pages:", error);
+      response.status(500).send("Internal Server Error");
     }
   },
 );

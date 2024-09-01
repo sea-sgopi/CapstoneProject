@@ -1,0 +1,45 @@
+<%- include('header') %>
+
+
+<h1>Educator Dashboard</h1>
+<h1 class="text-xl font-bold  p-4 rounded-lg">
+    Showing Chapter Courses  
+</h1>
+
+<hr>
+<h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
+    Course Chapter List
+</h1>
+
+
+<div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Chapter List</h1>
+    <ul class="space-y-4">
+        <% for(var i=0; i <  chapters.length; i++) { %>
+            <li class="p-4 bg-white rounded-lg shadow-md hover:bg-gray-100 transition flex justify-between items-center">
+                <div id="chapter-<%=[i+1]%>">
+                  <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Chapter <%= [i+1] %>: <%= chapters[i].title %></a>
+                  <p class="text-gray-600 mt-2"><%= chapters[i].description %></p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-600">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                <a href="/view-chapter/<%= chapters[i].id %>">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </a>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+              </li>
+        <% } %>      
+    </ul>
+  </div>
+
+
+  
+<div class="px-20 py-60">
+    <%- include('footer.ejs') %>
+</div>
+  

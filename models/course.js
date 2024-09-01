@@ -41,6 +41,30 @@ module.exports = (sequelize, DataTypes) => {
         throw error;
       }
     }
+
+    static async myCourses(userId) {
+      try {
+        const courses = await Course.findAll({
+          where: {
+            educatorId: userId,
+          },
+          include: {
+            model: sequelize.models.User,
+            as: "educator",
+            attributes: ["fullName"],
+          },
+        });
+
+        return courses.map((course) => ({
+          id: course.id,
+          title: course.name,
+          educatorName: course.educator ? course.educator.fullName : "Unknown",
+        }));
+      } catch (error) {
+        console.error("Error fetching courses for user:", error);
+        throw error;
+      }
+    }
   }
   Course.init(
     {

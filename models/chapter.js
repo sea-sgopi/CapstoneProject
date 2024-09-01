@@ -17,6 +17,57 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "chapterId",
       });
     }
+
+    static async findByCourseId(courseId) {
+      try {
+        const chapters = await Chapter.findAll({
+          where: {
+            courseId: courseId,
+          },
+          include: {
+            model: sequelize.models.Course,
+            attributes: ["name"],
+          },
+          order: [["createdAt", "ASC"]], // Optional: order chapters by creation date
+        });
+        return chapters;
+      } catch (error) {
+        console.error("Error fetching chapters for course:", error);
+        throw error;
+      }
+    }
+
+    static async findChapterWithPages(chapterId) {
+      try {
+        const chapter = await Chapter.findOne({
+          where: { id: chapterId },
+          include: [
+            {
+              model: sequelize.models.Page,
+              as: "Pages",
+            },
+          ],
+        });
+
+        if (!chapter) {
+          throw new Error("Chapter not found");
+        }
+
+        return {
+          id: chapter.id,
+          title: chapter.title,
+          description: chapter.description,
+          pages: chapter.Pages.map((page) => ({
+            id: page.id,
+            title: page.title,
+            content: page.content,
+          })),
+        };
+      } catch (error) {
+        console.error("Error fetching chapter with pages:", error);
+        throw error;
+      }
+    }
   }
   Chapter.init(
     {

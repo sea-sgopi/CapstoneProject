@@ -536,11 +536,12 @@ app.get(
     try {
       const studentId = request.user.id;
       const pageId = request.params.pageId;
+
       const pages = await Chapter.findByPk(pageId);
       const isCompleted = await Page.isPageCompleted(studentId, pageId);
       if (!pages) {
         request.flash("error", "Page Not Found");
-        return response.redirect("/dashboard");
+        return response.redirect(`/view-page/${pageId}`);
       }
       response.render("view-page", {
         title: `${pages.title}`,

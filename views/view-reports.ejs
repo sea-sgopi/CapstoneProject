@@ -16,8 +16,8 @@
         <% for(var i=0; i <  courses.length; i++) { %>
             <li class="p-4 bg-white rounded-lg shadow-md hover:bg-gray-100 transition flex justify-between items-center">
                 <div id="chapter-<%=[i+1]%>">
-                  <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Student <%= [i+1] %>: <%= courses[i].studentName %></a>
-                  <p class="text-gray-600 mt-2"><%= courses[i].courseName %></p>
+                  <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Student <%= [i+1] %>: <%= courses[i].courseName %></a>
+                  <p class="text-gray-600 mt-2"><%= courses[i].length %></p>
                 </div>
                 <a href="/view-chapter/<%= courses[i].id %>">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -31,3 +31,8 @@
         <% } %>      
     </ul>
   </div>
+
+  <!-- 
+  TODO
+  Relative Popularity of courses 
+  based on the enrolled strength: -->

@@ -623,28 +623,6 @@ app.get(
   },
 );
 
-// app.get(
-//   "/view-reports",
-//   connectEnsureLogin.ensureLoggedIn(),
-//   requireRole(["Educator"]),
-//   async (request, response) => {
-//     try {
-//       const userId = request.user.id;
-//       const courses = await Enrollment.getCoursesWithEnrollmentCount();
-//       const username = await User.username(userId);
-//       response.render("view-reports", {
-//         title: "Course Report",
-//         courses,
-//         username,
-//       });
-//       console.log(`Courses : ${courses}`);
-//     } catch (error) {
-//       console.error("Error loading enrolled courses:", error);
-//       response.status(500).send("Internal Server Error");
-//     }
-//   },
-// );
-
 app.get(
   "/view-reports",
   connectEnsureLogin.ensureLoggedIn(),
@@ -652,21 +630,14 @@ app.get(
   async (request, response) => {
     try {
       const userId = request.user.id;
-      const courses = await Enrollment.getCoursesWithEnrollmentCount();
+      const courses = await Enrollment.findAllEnrollments();
       const username = await User.username(userId);
-
-      // Ensure courses data is in the expected format
-      if (courses.length > 0) {
-        console.log("Courses data:", JSON.stringify(courses, null, 2));
-      } else {
-        console.log("No courses data found.");
-      }
-
       response.render("view-reports", {
         title: "Course Report",
         courses,
         username,
       });
+      console.log(`Courses : ${courses}`);
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
       response.status(500).send("Internal Server Error");

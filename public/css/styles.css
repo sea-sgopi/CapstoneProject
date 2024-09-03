@@ -1,21 +1,20 @@
-
 button .maxPageIcon {
-    display: none;
+  display: none;
 }
 
 button:hover .nextPageIcon {
-    display: none;
+  display: none;
 }
 
 button:hover .maxPageIcon {
-    display: block;
+  display: block;
 }
 
 button .maxPageIcon {
-    display: none;
+  display: none;
 }
 
 button svg {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }

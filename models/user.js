@@ -20,6 +20,23 @@ module.exports = (sequelize, DataTypes) => {
     static async username(userId) {
       try {
         const user = await User.findByPk(userId, {
+          attributes: ["userName"],
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        return user.userName;
+      } catch (error) {
+        console.error("Error finding userName:", error);
+        throw error;
+      }
+    }
+
+    static async fullname(userId) {
+      try {
+        const user = await User.findByPk(userId, {
           attributes: ["fullName"],
         });
 
@@ -29,13 +46,18 @@ module.exports = (sequelize, DataTypes) => {
 
         return user.fullName;
       } catch (error) {
-        console.error("Error finding user full name:", error);
+        console.error("Error finding user's fullName:", error);
         throw error;
       }
     }
   }
   User.init(
     {
+      userName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
       fullName: {
         type: DataTypes.STRING,
         allowNull: false,

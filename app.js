@@ -146,6 +146,7 @@ app.post("/users", async (request, response) => {
     const user = await User.create({
       role: request.body.role,
       fullName: request.body.fullName,
+      userName: request.body.userName,
       email: request.body.email,
       password: hashedPwd,
     });
@@ -159,7 +160,10 @@ app.post("/users", async (request, response) => {
   } catch (error) {
     console.error("User creation error:", error);
     if (error.name === "SequelizeUniqueConstraintError") {
-      request.flash("error", "The email address is already in use.");
+      request.flash(
+        "error",
+        "The email address OR User Name  is already in use.",
+      );
     } else {
       request.flash("error", "An error occurred. Please try again.");
     }
@@ -200,16 +204,17 @@ app.get(
     // Logic
     try {
       const userId = request.user.id;
-      const username = await User.username(userId);
+      const fullname = await User.fullname(userId);
+      const username = await User.fullname(userId);
       const userRole = request.user.role;
-      const role = userRole === "Educator";
       const coursesWithEducator = await Course.coursesWithEducator();
       if (request.accepts("html")) {
         response.render("educator-dashboard", {
           title: "Dashboard",
           coursesWithEducator,
+          fullname,
           username,
-          role,
+          userRole,
         });
       } else {
         response.json({
@@ -231,14 +236,20 @@ app.get(
     // Logic
     try {
       const userId = request.user.id;
+      const fullname = await User.fullname(userId);
       const username = await User.username(userId);
+      const courses = await Enrollment.enrolledCourses(userId);
+      const userRole = request.user.role;
       const coursesWithEducator = await Course.coursesWithEducator();
       console.log(`User ID from request: ${request.user.id}`);
       if (request.accepts("html")) {
         response.render("student-dashboard", {
           title: "Dashboard",
           coursesWithEducator,
+          fullname,
           username,
+          courses,
+          userRole,
         });
       } else {
         response.json({
@@ -472,12 +483,12 @@ app.get(
     // Logic
     try {
       const userId = request.user.id;
-      const username = await User.username(userId);
+      const fullname = await User.fullname(userId);
       const myCourses = await Course.myCourses(userId);
       response.render("my-courses", {
         title: "My Courses",
         myCourses,
-        username,
+        fullname,
       });
     } catch (error) {
       console.error("Error loading my courses:", error);
@@ -494,13 +505,15 @@ app.get(
     // Logic
     try {
       const userRole = request.user.role;
-      const role = userRole === "Educator";
       const courseId = request.params.courseId;
+      const userId = request.user.id;
+      const courses = await Enrollment.enrolledCourses(userId);
       const chapters = await Chapter.findByCourseId(courseId);
       response.render("view-chapters", {
         title: "View Courses",
         chapters,
-        role,
+        courses,
+        userRole,
       });
     } catch (error) {
       console.error("Error loading courses chapters:", error);
@@ -517,8 +530,9 @@ app.get(
     // Logic
     try {
       const userRole = request.user.role;
-      const role = userRole === "Educator";
+      const userId = request.user.id;
       const chapterId = request.params.chapterId;
+      const courses = await Enrollment.enrolledCourses(userId);
       const chapter = await Chapter.findChapterWithPages(chapterId, {
         include: [Page],
       });
@@ -531,7 +545,8 @@ app.get(
         title: `View Chapter: ${chapter.title}`,
         chapter,
         pages,
-        role,
+        userRole,
+        courses,
       });
     } catch (error) {
       console.error("Error loading pages:", error);
@@ -550,7 +565,6 @@ app.get(
       const studentId = request.user.id;
       const pageId = request.params.pageId;
       const userRole = request.user.role;
-      const role = userRole === "Educator";
       const page = await Page.findByPk(pageId);
       const nextId = await Page.findNextPageId(pageId);
       const isCompleted = await Page.isPageCompleted(studentId, pageId);
@@ -562,7 +576,7 @@ app.get(
         title: `${page.title}`,
         page,
         isCompleted,
-        role,
+        userRole,
         nextId,
       });
       console.log(`nextId : ${nextId}`);
@@ -586,7 +600,6 @@ app.get(
         request.flash("error", "You are already enrolled in this course.");
         return response.redirect(`/student-dashboard`); // Need to change
       }
-      const username = await User.username(studentId);
       await Enrollment.create({
         studentId: studentId,
         courseId: courseId,
@@ -608,13 +621,17 @@ app.get(
     try {
       const studentId = request.user.id;
       const courses = await Enrollment.enrolledCourses(studentId);
+      const fullname = await User.fullname(studentId);
       const username = await User.username(studentId);
+      const userRole = request.user.role;
       const coursesWithEducator = await Course.coursesWithEducator();
       response.render("enrolled-courses", {
         title: "My Courses",
         courses,
+        fullname,
         username,
         coursesWithEducator,
+        userRole,
       });
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
@@ -631,11 +648,11 @@ app.get(
     try {
       const userId = request.user.id;
       const courses = await Enrollment.findAllEnrollments();
-      const username = await User.username(userId);
+      const fullname = await User.fullname(userId);
       response.render("view-reports", {
         title: "Course Report",
         courses,
-        username,
+        fullname,
       });
       console.log(`Courses : ${courses}`);
     } catch (error) {

@@ -12,6 +12,16 @@
     <%- include('flash') %>
     
     <div class="py-3">
+        <label for="chapter">Select Chapter:</label>
+        <select id="chapter" name="chapterId" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+            <option value="<%= chapter.id %>">Current Chapter <%= chapter.title %></option>
+            <% chapters.forEach(function(ch) { %>
+                <option value="<%= ch.id %>"><%= ch.title %></option>
+            <% }) %>
+        </select>
+    </div>
+
+    <div class="py-3">
         <label for="title">Page Title:</label>
         <input type="text" id="title" name="title" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
     </div>
@@ -20,12 +30,6 @@
         <textarea  id="content" name="content" required class="border border-gray-300 text-gray-900 rounded p-2 w-full"></textarea>
     </div>
     <div class="flex items-center justify-between py-3">
-        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">>Add Page</button>
+        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Add Page</button>
     </div>
 </form>
-<!-- 
-TODO
-
-chapter id needs to passed 
-from the form as well for the particular course 
--->

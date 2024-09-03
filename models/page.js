@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Op } = require("sequelize");
 const completion = require("./completion");
 module.exports = (sequelize, DataTypes) => {
   class Page extends Model {
@@ -32,6 +32,29 @@ module.exports = (sequelize, DataTypes) => {
           "Error checking page completion status for student:",
           error,
         );
+        throw error;
+      }
+    }
+
+    static async findNextPageId(pageId) {
+      try {
+        const currentPage = await Page.findByPk(pageId);
+        if (!currentPage) {
+          throw new Error(`Page with ID ${pageId} not found`);
+        }
+        const nextPage = await Page.findOne({
+          where: {
+            chapterId: currentPage.chapterId,
+            id: {
+              [Op.gt]: pageId,
+            },
+          },
+          order: [["id", "ASC"]],
+        });
+        const nextPageId = nextPage ? nextPage.id : null;
+        return nextPageId;
+      } catch (error) {
+        console.error("Error finding next page and maxPage", error);
         throw error;
       }
     }

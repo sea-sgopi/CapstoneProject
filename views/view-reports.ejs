@@ -11,28 +11,22 @@
 </h1>
 
 <div class="container mx-auto py-8">
-    <h1 class="text-xl font-semi-bold mb-6 text-gray-800">Chapter List</h1>
+    <h1 class="text-xl font-semi-bold mb-6 text-gray-800">Courses Summary</h1>
     <ul class="space-y-4">
       <% for(var i=0; i <  courses.length; i++) { %>
         <li class="p-4 bg-white rounded-lg shadow-md hover:bg-gray-100 transition flex justify-between items-center">
             <div id="chapter-<%=[i+1]%>">
-              <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Student <%= [i+1] %>: <%= courses[i].courseName %></a>
-              <p class="text-gray-600 mt-2"><%= courses.length %></p>
+              <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Course <%= [i+1] %>: <%= courses[i].courseName %></a>
+              <p class="text-gray-600 mt-2">Students Count: <%=  %></p>
+
+
             </div>
-            <a href="/view-chapter/<%= courses[i].id %>">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-              </svg>
-            </a>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
           </li>
       <% } %>      
     </ul>
-  </div>
+</div>
 
-  <!-- 
-  TODO
-  Relative Popularity of courses 
-  based on the enrolled strength: -->
+<!-- 
+TODO
+Relative Popularity of courses 
+based on the enrolled strength: -->

@@ -1,0 +1,21 @@
+
+button .maxPageIcon {
+    display: none;
+}
+
+button:hover .nextPageIcon {
+    display: none;
+}
+
+button:hover .maxPageIcon {
+    display: block;
+}
+
+button .maxPageIcon {
+    display: none;
+}
+
+button svg {
+    width: 24px;
+    height: 24px;
+}

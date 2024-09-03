@@ -201,12 +201,15 @@ app.get(
     try {
       const userId = request.user.id;
       const username = await User.username(userId);
+      const userRole = request.user.role;
+      const role = userRole === "Educator";
       const coursesWithEducator = await Course.coursesWithEducator();
       if (request.accepts("html")) {
         response.render("educator-dashboard", {
           title: "Dashboard",
           coursesWithEducator,
           username,
+          role,
         });
       } else {
         response.json({
@@ -319,6 +322,13 @@ app.get("/test", (request, response) => {
   });
 });
 
+app.get("/development", (request, response) => {
+  // Logic
+  return response.render("development", {
+    title: "Development View",
+  });
+});
+
 app.get(
   "/new-course",
   connectEnsureLogin.ensureLoggedIn(),
@@ -410,23 +420,18 @@ app.get(
     // Logic
     try {
       const { courseId, chapterId } = request.params;
-      const chapter = await Chapter.findOne({
-        where: { id: chapterId, courseId },
-        include: Course,
-      });
-
-      if (!chapter) {
-        request.flash("error", "Chapter not found.");
-        return response.redirect(`/courses/${courseId}/chapters/new`);
-      }
-
+      const chapters = await Chapter.findAll({ where: { courseId } });
       response.render("new-page", {
-        course: chapter.Course,
-        chapter,
+        course: await Course.findByPk(courseId),
+        chapter: await Chapter.findByPk(chapterId),
+        chapters,
         title: "Add Page",
       });
     } catch (error) {
-      console.error("Error loading page creation form:", error);
+      console.error(
+        "Error loading page creation form: or loading chapters:",
+        error,
+      );
       response.status(500).send("Internal Server Error");
     }
   },
@@ -439,7 +444,9 @@ app.post(
   async (request, response) => {
     // Logic
     try {
-      const { courseId, chapterId } = request.params;
+      const { courseId, chapterId: defaultChapterId } = request.params;
+      const chapterId = request.body.chapterId || defaultChapterId;
+
       await Page.create({
         title: request.body.title,
         content: request.body.content,
@@ -480,17 +487,20 @@ app.get(
 );
 
 app.get(
-  "/view-course/:courseId",
+  "/view-chapters/:courseId",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator", "Student"]),
   async (request, response) => {
     // Logic
     try {
+      const userRole = request.user.role;
+      const role = userRole === "Educator";
       const courseId = request.params.courseId;
       const chapters = await Chapter.findByCourseId(courseId);
-      response.render("view-course", {
+      response.render("view-chapters", {
         title: "View Courses",
         chapters,
+        role,
       });
     } catch (error) {
       console.error("Error loading courses chapters:", error);
@@ -500,12 +510,14 @@ app.get(
 );
 
 app.get(
-  "/view-chapter/:chapterId",
+  "/view-pages/:chapterId",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator", "Student"]),
   async (request, response) => {
     // Logic
     try {
+      const userRole = request.user.role;
+      const role = userRole === "Educator";
       const chapterId = request.params.chapterId;
       const chapter = await Chapter.findChapterWithPages(chapterId, {
         include: [Page],
@@ -515,10 +527,11 @@ app.get(
         return response.redirect(`/view-course/${chapter.courseId}`);
       }
       const pages = chapter.pages;
-      response.render("view-chapter", {
+      response.render("view-pages", {
         title: `View Chapter: ${chapter.title}`,
         chapter,
         pages,
+        role,
       });
     } catch (error) {
       console.error("Error loading pages:", error);
@@ -536,18 +549,23 @@ app.get(
     try {
       const studentId = request.user.id;
       const pageId = request.params.pageId;
-
-      const pages = await Chapter.findByPk(pageId);
+      const userRole = request.user.role;
+      const role = userRole === "Educator";
+      const page = await Page.findByPk(pageId);
+      const nextId = await Page.findNextPageId(pageId);
       const isCompleted = await Page.isPageCompleted(studentId, pageId);
-      if (!pages) {
+      if (!page) {
         request.flash("error", "Page Not Found");
-        return response.redirect(`/view-page/${pageId}`);
+        return response.redirect(`/error`);
       }
       response.render("view-page", {
-        title: `${pages.title}`,
-        pages,
+        title: `${page.title}`,
+        page,
         isCompleted,
+        role,
+        nextId,
       });
+      console.log(`nextId : ${nextId}`);
     } catch (error) {
       console.error("Error loading pages:", error);
       response.status(500).send("Internal Server Error");
@@ -605,6 +623,28 @@ app.get(
   },
 );
 
+// app.get(
+//   "/view-reports",
+//   connectEnsureLogin.ensureLoggedIn(),
+//   requireRole(["Educator"]),
+//   async (request, response) => {
+//     try {
+//       const userId = request.user.id;
+//       const courses = await Enrollment.getCoursesWithEnrollmentCount();
+//       const username = await User.username(userId);
+//       response.render("view-reports", {
+//         title: "Course Report",
+//         courses,
+//         username,
+//       });
+//       console.log(`Courses : ${courses}`);
+//     } catch (error) {
+//       console.error("Error loading enrolled courses:", error);
+//       response.status(500).send("Internal Server Error");
+//     }
+//   },
+// );
+
 app.get(
   "/view-reports",
   connectEnsureLogin.ensureLoggedIn(),
@@ -612,14 +652,21 @@ app.get(
   async (request, response) => {
     try {
       const userId = request.user.id;
-      const courses = await Enrollment.findAllEnrollments();
+      const courses = await Enrollment.getCoursesWithEnrollmentCount();
       const username = await User.username(userId);
+
+      // Ensure courses data is in the expected format
+      if (courses.length > 0) {
+        console.log("Courses data:", JSON.stringify(courses, null, 2));
+      } else {
+        console.log("No courses data found.");
+      }
+
       response.render("view-reports", {
         title: "Course Report",
         courses,
         username,
       });
-      console.log(`Courses : ${courses}`);
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
       response.status(500).send("Internal Server Error");

@@ -546,6 +546,7 @@ app.get(
       const userId = request.user.id;
       const chapterId = request.params.chapterId;
       const courses = await Enrollment.enrolledCourses(userId);
+      const isCompleted = await Chapter.isChapterCompleted(userId, chapterId);
       const chapter = await Chapter.findChapterWithPages(chapterId, {
         include: [Page],
       });
@@ -560,6 +561,7 @@ app.get(
         pages,
         userRole,
         courses,
+        isCompleted,
       });
     } catch (error) {
       console.error("Error loading pages:", error);
@@ -592,7 +594,6 @@ app.get(
         userRole,
         nextId,
       });
-      console.log(`nextId : ${nextId}`);
     } catch (error) {
       console.error("Error loading pages:", error);
       response.status(500).send("Internal Server Error");

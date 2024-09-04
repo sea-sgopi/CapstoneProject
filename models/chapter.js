@@ -68,6 +68,38 @@ module.exports = (sequelize, DataTypes) => {
         throw error;
       }
     }
+
+    static async isChapterCompleted(studentId, chapterId) {
+      try {
+        const pages = await sequelize.models.Page.findAll({
+          where: {
+            chapterId: chapterId,
+          },
+        });
+
+        if (pages.length === 0) {
+          return true;
+        }
+
+        const allCompleted = await Promise.all(
+          pages.map(async (page) => {
+            const completed = await sequelize.models.Completion.findOne({
+              where: {
+                pageId: page.id,
+                studentId: studentId,
+                completed: true,
+              },
+            });
+            return !!completed;
+          }),
+        );
+
+        return allCompleted.every((status) => status === true);
+      } catch (error) {
+        console.error("Error checking chapter completion status:", error);
+        throw error;
+      }
+    }
   }
   Chapter.init(
     {

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
@@ -91,6 +90,23 @@ module.exports = (sequelize, DataTypes) => {
         }));
       } catch (error) {
         console.error("Error fetching all enrollments:", error);
+        throw error;
+      }
+    }
+
+    static async Enrollments(courseId) {
+      try {
+        const count = await Enrollment.count({
+          where: {
+            courseId,
+          },
+          distinct: true,
+          col: "studentId",
+        });
+
+        return count;
+      } catch (error) {
+        console.error("Error counting students enrolled in course:", error);
         throw error;
       }
     }

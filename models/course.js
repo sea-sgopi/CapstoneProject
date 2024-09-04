@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
@@ -40,6 +39,23 @@ module.exports = (sequelize, DataTypes) => {
         }));
       } catch (error) {
         console.error("Error fetching courses with educators:", error);
+        throw error;
+      }
+    }
+
+    static async courseFullName(courseId) {
+      try {
+        const course = await Course.findByPk(courseId, {
+          attributes: ["name"],
+        });
+
+        if (!course) {
+          throw new Error("Course not found");
+        }
+
+        return course.name;
+      } catch (error) {
+        console.error("Error finding courses Name:", error);
         throw error;
       }
     }

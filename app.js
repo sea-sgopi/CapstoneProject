@@ -508,17 +508,25 @@ app.get(
     try {
       const userRole = request.user.role;
       const courseId = request.params.courseId;
+      const courseName = await Course.courseFullName(courseId);
       const userId = request.user.id;
+      const fullname = await User.fullname(userId);
+      const enroll = await Enrollment.isUserEnrolled(userId, courseId);
       const courses = await Enrollment.enrolledCourses(userId);
       const enrolled = await Enrollment.enrolledIds(userId);
+      const total = await Enrollment.Enrollments(courseId);
       const chapters = await Chapter.findByCourseId(courseId);
       response.render("view-chapters", {
         title: "View Courses",
         chapters,
         courseId,
+        courseName,
         courses,
+        fullname,
         enrolled,
+        enroll,
         userRole,
+        total,
       });
     } catch (error) {
       console.error("Error loading courses chapters:", error);

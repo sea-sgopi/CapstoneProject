@@ -239,6 +239,7 @@ app.get(
       const fullname = await User.fullname(userId);
       const username = await User.username(userId);
       const courses = await Enrollment.enrolledCourses(userId);
+      const enrolled = await Enrollment.enrolledIds(userId);
       const userRole = request.user.role;
       const coursesWithEducator = await Course.coursesWithEducator();
       console.log(`User ID from request: ${request.user.id}`);
@@ -249,6 +250,7 @@ app.get(
           fullname,
           username,
           courses,
+          enrolled,
           userRole,
         });
       } else {
@@ -508,11 +510,14 @@ app.get(
       const courseId = request.params.courseId;
       const userId = request.user.id;
       const courses = await Enrollment.enrolledCourses(userId);
+      const enrolled = await Enrollment.enrolledIds(userId);
       const chapters = await Chapter.findByCourseId(courseId);
       response.render("view-chapters", {
         title: "View Courses",
         chapters,
+        courseId,
         courses,
+        enrolled,
         userRole,
       });
     } catch (error) {
@@ -621,6 +626,7 @@ app.get(
     try {
       const studentId = request.user.id;
       const courses = await Enrollment.enrolledCourses(studentId);
+      const enrolled = await Enrollment.enrolledIds(studentId);
       const fullname = await User.fullname(studentId);
       const username = await User.username(studentId);
       const userRole = request.user.role;
@@ -629,6 +635,7 @@ app.get(
         title: "My Courses",
         courses,
         fullname,
+        enrolled,
         username,
         coursesWithEducator,
         userRole,

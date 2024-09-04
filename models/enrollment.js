@@ -52,6 +52,22 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
 
+    static async enrolledIds(studentId) {
+      try {
+        const enrollments = await Enrollment.findAll({
+          where: {
+            studentId: studentId,
+          },
+          attributes: ["courseId"],
+        });
+
+        return enrollments.map((enrollment) => enrollment.courseId);
+      } catch (error) {
+        console.error("Error fetching enrolled courses Ids:", error);
+        throw error;
+      }
+    }
+
     static async findAllEnrollments() {
       try {
         const enrollments = await Enrollment.findAll({

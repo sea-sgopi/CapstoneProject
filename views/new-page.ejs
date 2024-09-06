@@ -14,7 +14,7 @@
     <div class="py-3">
         <label for="chapter">Select Chapter:</label>
         <select id="chapter" name="chapterId" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
-            <option value="<%= chapter.id %>">Current Chapter <%= chapter.title %></option>
+            <option value="<%= chapter.id %>"><%= chapter.title %></option>
             <% chapters.forEach(function(ch) { %>
                 <option value="<%= ch.id %>"><%= ch.title %></option>
             <% }) %>
@@ -27,17 +27,33 @@
     </div>
     <div class="py-3">
         <label for="content">Page Content:</label>
-        <textarea  id="content" name="content" required class="border border-gray-300 text-gray-900 rounded p-2 w-full"></textarea>
+        <div id="editor" class="border border-gray-300 text-gray-900 rounded p-2 w-full" style="height: 300px;"></div>
+        <input type="hidden" name="content" id="content">
     </div>
+    <script>
+        var quill = new Quill('#editor', {
+          theme: 'snow',
+          placeholder: 'Write your Page content here...',
+          modules: {
+            toolbar: [
+                [{ 'font': [] }, { 'size': [] }],  
+                [{ 'header': [1, 2, 3, false] }], 
+                ['bold', 'italic', 'underline', 'strike'],  
+                [{ 'color': [] }, { 'background': [] }],   
+                [{ 'script': 'sub'}, { 'script': 'super' }], 
+                ['blockquote', 'code-block'],  
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }], 
+                [{ 'align': [] }], 
+                ['link', 'image'],
+            ]
+          }
+        });
+
+        quill.on('text-change', function() {
+          document.getElementById('content').value = quill.root.innerHTML;
+        });
+    </script>
     <div class="flex items-center justify-between py-3">
         <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Add Page</button>
     </div>
 </form>
-
-<!-- 
-TODO
-
-content input should 
-be in text editor
-
-chapter label should show below the dropdown -->

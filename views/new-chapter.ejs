@@ -9,26 +9,46 @@
     Add a New Chapter to <%= course.name %>
 </h1>
 
-  <form class="px-40 py-4" action="/courses/<%= course.id %>/chapters/new" method="post">
-    <%- include('flash') %>
-    
+<% if (!chapters.length) { %>
+    <div class="font-bold text-xl mb-2">
+        There are no chapters available. Create one?
+    </div>
+    <div class="flex items-center justify-between py-3">
+        <button id="showFormBtn" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">
+            Add Chapter
+        </button>
+    </div>
+    <!-- Hide the form -->
+    <form id="chapterForm" class="px-40 py-4 hidden" action="/courses/<%= course.id %>/chapters/new" method="post">
+<% } else { %>
+    <!-- Display the form -->
+    <form id="chapterForm" class="px-40 py-4" action="/courses/<%= course.id %>/chapters/new" method="post">
+<% } %>
+
     <div class="py-3">
         <label for="title">Chapter Title:</label>
         <input type="text" id="title" name="title" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
     </div>
     <div class="py-3">
         <label for="description">Chapter Description:</label>
-        <textarea type="description" id="description" name="description" required class="border border-gray-300 text-gray-900 rounded p-2 w-full"></textarea>
+        <textarea id="description" name="description" required class="border border-gray-300 text-gray-900 rounded p-2 w-full"></textarea>
     </div>
     <div class="flex items-center justify-between py-3">
-        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Add Chapter</button>
+        <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">
+            Add Chapter
+        </button>
     </div>
 </form>
 
-<!-- 
-TODO
+<script>
+    const showFormBtn = document.getElementById('showFormBtn');
+    const chapterForm = document.getElementById('chapterForm');
 
-when the course is created when & there are no chapters
-There are no chapters available. Create one?
-button for it 
-should show -->
+    if (showFormBtn) {
+        showFormBtn.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            chapterForm.classList.remove('hidden'); 
+            showFormBtn.style.display = 'none'; 
+        });
+    }
+</script>

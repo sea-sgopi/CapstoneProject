@@ -208,6 +208,7 @@ app.get(
       const username = await User.fullname(userId);
       const userRole = request.user.role;
       const coursesWithEducator = await Course.coursesWithEducator();
+      const count = await Enrollment.findEnrollmentsWithPopularity();
       if (request.accepts("html")) {
         response.render("educator-dashboard", {
           title: "Dashboard",
@@ -215,6 +216,7 @@ app.get(
           fullname,
           username,
           userRole,
+          count,
         });
       } else {
         response.json({
@@ -242,6 +244,7 @@ app.get(
       const enrolled = await Enrollment.enrolledIds(userId);
       const userRole = request.user.role;
       const coursesWithEducator = await Course.coursesWithEducator();
+      const count = await Enrollment.findEnrollmentsWithPopularity();
       console.log(`User ID from request: ${request.user.id}`);
       if (request.accepts("html")) {
         response.render("student-dashboard", {
@@ -252,6 +255,7 @@ app.get(
           courses,
           enrolled,
           userRole,
+          count,
         });
       } else {
         response.json({
@@ -384,13 +388,18 @@ app.get(
     try {
       const { courseId } = request.params;
       const course = await Course.findByPk(courseId);
+      const chapters = await Chapter.findByCourseId(courseId);
 
       if (!course) {
         request.flash("error", "Course not found.");
         return response.redirect("/courses/new");
       }
 
-      response.render("new-chapter", { course, title: "Create Chapter" });
+      response.render("new-chapter", {
+        course,
+        chapters,
+        title: "Create Chapter",
+      });
     } catch (error) {
       console.error("Error loading chapter creation page:", error);
       response.status(500).send("Internal Server Error");
@@ -545,6 +554,8 @@ app.get(
       const userRole = request.user.role;
       const userId = request.user.id;
       const chapterId = request.params.chapterId;
+      const courseId = request.params.courseId;
+      console.log(`courseID === ${courseId}`);
       const courses = await Enrollment.enrolledCourses(userId);
       const isCompleted = await Chapter.isChapterCompleted(userId, chapterId);
       const chapter = await Chapter.findChapterWithPages(chapterId, {

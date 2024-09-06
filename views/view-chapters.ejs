@@ -1,17 +1,12 @@
 <%- include('header') %>
- 
-<h1>Educator Dashboard</h1>
-<h1 class="text-xl font-bold  p-4 rounded-lg">
-    Showing Chapter Courses  
-</h1>
-<hr>
-<h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
-    Course Chapter List
-</h1>
 
+<h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
+    Course Chapter 
+</h1>
+<!--  course chapter replace with course Name  above -->
 
 <div class="container mx-auto py-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Chapter List</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Chapters</h1>
     <ul class="space-y-4">
         <% for(var i=0; i <  chapters.length; i++) { %>
             <li class="p-4 bg-white rounded-lg shadow-md hover:bg-gray-100 transition flex justify-between items-center">
@@ -42,11 +37,6 @@
                   <% } %>
                 <% } %>
                  
-                <!-- 
-                if student completed the work
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg> -->
               </li>
         <% } %>      
     </ul>

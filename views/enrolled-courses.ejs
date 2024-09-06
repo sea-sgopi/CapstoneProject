@@ -1,11 +1,9 @@
 <%- include('header.ejs') %>
 
-<h1>Student Dashboard</h1>
 <h1 class="text-4xl font-bold  p-4 rounded-lg">
     Welcome <%= fullname %>!
 </h1>
 
-<hr>
 <h1 class="text-xl ul py-10 font-bold text-center  p-4 rounded-lg">
     You have joined the following courses:
 </h1>
@@ -24,8 +22,18 @@
                 </p>
             </div>
             <div class="px-6 pt-4 pb-2 flex justify-between">
-                <button onclick="window.location.href='/<%= courses[i].id %>';" class="bg-cyan-500 hover:bg-cyan-600 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Continue</button>
-                <button onclick="window.location.href='/<%= courses[i].id %>';" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Completed : </button>
+                <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Completed : <%= courses[i].progress %>%</button>
+                <% if (courses[i].nextPageId) { %>
+                    <button onclick="window.location.href='/view-page/<%= courses[i].nextPageId %>';" class="bg-cyan-500 hover:bg-cyan-600 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                            <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 10.28a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 1 0-1.06 1.06l1.72 1.72H8.25a.75.75 0 0 0 0 1.5h5.69l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3Z" clip-rule="evenodd" />
+                          </svg>                           
+                    </button>
+                <% } else { %>
+                    <button class="bg-gray-400 text-white px-2 py-1 rounded font-medium mr-2 mb-2" disabled>
+                      Course Completed
+                    </button>
+                <% } %>
             </div>
         </div>
         <% } %>

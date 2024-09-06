@@ -58,6 +58,37 @@ module.exports = (sequelize, DataTypes) => {
         throw error;
       }
     }
+
+    static async findNextIncompletePage(studentId, courseId) {
+      try {
+        const pages = await sequelize.models.Page.findAll({
+          include: {
+            model: sequelize.models.Chapter,
+            where: { courseId },
+          },
+          order: [["id", "ASC"]],
+        });
+
+        for (const page of pages) {
+          const isCompleted = await sequelize.models.Completion.findOne({
+            where: {
+              studentId,
+              pageId: page.id,
+              completed: true,
+            },
+          });
+
+          if (!isCompleted) {
+            return page;
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Error finding next incomplete page:", error);
+        throw error;
+      }
+    }
   }
   Page.init(
     {

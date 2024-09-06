@@ -1,32 +1,25 @@
 <%- include('header.ejs') %>
 
-<h1>Educator Dashboard</h1>
-<h1 class="text-4xl font-bold  p-4 rounded-lg">
-    Welcome <%= fullname %>!
-</h1>
-
-<hr>
-<h1 class="text-xl ul py-10 font-bold text-center  p-4 rounded-lg">
-    Your Course Report:
+<%- include('flash') %>
+<h1 class="text-4xl ul py-20 font-bold text-left  p-4 rounded-lg">
+    Reports:
 </h1>
 
 <div class="container mx-auto py-8">
-    <h1 class="text-xl font-semi-bold mb-6 text-gray-800">Courses Summary</h1>
-    <ul class="space-y-4">
-      <% for(var i=0; i <  courses.length; i++) { %>
-        <li class="p-4 bg-white rounded-lg shadow-md hover:bg-gray-100 transition flex justify-between items-center">
-            <div id="chapter-<%=[i+1]%>">
-              <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Course <%= [i+1] %>: <%= courses[i].courseName %></a>
-              <p class="text-gray-600 mt-2">Students Count: <%=  %></p>
-
-
-            </div>
-          </li>
-      <% } %>      
-    </ul>
+  <h1 class="text-xl font-semi-bold mb-6 text-gray-800">Courses Summary</h1>
+  <ul class="space-y-4">
+    <% for(var i = 0; i < courses.length; i++) { %>
+      <li class="p-4 bg-white rounded-lg shadow-md hover:bg-gray-100 transition flex justify-between items-center">
+        <div id="chapter-<%=[i+1]%>">
+          <a href="#chapter-<%=[i+1]%>" class="text-xl font-semibold">Course <%= [i+1] %>: <%= courses[i].courseName %></a>
+          <p class="text-gray-600 mt-2">Students Count: <%= courses[i].studentCount%> / <%= courses[i].totalStudents %></p>
+          <p class="text-gray-600 mt-2">Popularity: <%= courses[i].popularity %> %</p> <!-- Display the relative popularity -->
+        </div>
+      </li>
+    <% } %>      
+  </ul>
 </div>
 
-<!-- 
-TODO
-Relative Popularity of courses 
-based on the enrolled strength: -->
+<div class="px-20 py-60">
+    <%- include('footer') %>
+</div>

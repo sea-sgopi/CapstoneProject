@@ -635,6 +635,17 @@ app.get(
     try {
       const studentId = request.user.id;
       const courses = await Enrollment.enrolledCourses(studentId);
+      for (const course of courses) {
+        course.progress = await Enrollment.calculateProgress(
+          studentId,
+          course.courseId,
+        );
+        const nextPage = await Page.findNextIncompletePage(
+          studentId,
+          course.courseId,
+        );
+        course.nextPageId = nextPage ? nextPage.id : null;
+      }
       const enrolled = await Enrollment.enrolledIds(studentId);
       const fullname = await User.fullname(studentId);
       const username = await User.username(studentId);
@@ -663,14 +674,15 @@ app.get(
   async (request, response) => {
     try {
       const userId = request.user.id;
-      const courses = await Enrollment.findAllEnrollments();
+      const courses = await Enrollment.findEnrollmentsWithPopularity();
       const fullname = await User.fullname(userId);
+
       response.render("view-reports", {
-        title: "Course Report",
+        title: "Courses Report",
         courses,
         fullname,
       });
-      console.log(`Courses : ${courses}`);
+      console.log(`Total Students: ${courses[0].totalStudents}`);
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
       response.status(500).send("Internal Server Error");

@@ -1,3 +1,9 @@
+hr {
+  /* height: 1px; */
+  background-color: black;
+  border: solid;
+}
+
 button .maxPageIcon {
   display: none;
 }

@@ -9,6 +9,7 @@
 - [Screenshots](#screenshots)
 - [Technologies Used](#technologies-used)
 - [Live Demo](#live-demo)
+- [Video Demo](#video-demo)
 ---
 
 ## Overview

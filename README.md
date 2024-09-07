@@ -28,7 +28,7 @@ Follow these steps to set up the project on your local machine:
 1. **Clone the repository:**
 
    ```bash
-   https://github.com/sea-sgopi/CapstoneProject.git
+   git clone https://github.com/sea-sgopi/CapstoneProject.git
    ```
 
 2. **Navigate to the project directory:**
@@ -129,3 +129,7 @@ This project was built using the following technologies:
 ## Live Demo
 
 You can check out the live application here: [Live Demo](https://capstoneprojectatsgopi.onrender.com)
+
+## Video Demo
+
+You can check out the video here: [Video Demo]([https://capstoneprojectatsgopi.onrender.com](https://www.loom.com/share/a41397579c9749f3a51259e640a3010d?sid=bf9e1044-56ac-41d7-9dfc-f967561e2e7f))

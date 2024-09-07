@@ -133,4 +133,4 @@ You can check out the live application here: [Live Demo](https://capstoneproject
 
 ## Video Demo
 
-You can check out the video here: [Video Demo]([https://capstoneprojectatsgopi.onrender.com](https://www.loom.com/share/a41397579c9749f3a51259e640a3010d?sid=bf9e1044-56ac-41d7-9dfc-f967561e2e7f))
+You can check out the video here: [Video Demo](https://www.loom.com/share/a41397579c9749f3a51259e640a3010d?sid=bf9e1044-56ac-41d7-9dfc-f967561e2e7f)

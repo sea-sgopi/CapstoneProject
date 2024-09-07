@@ -13,7 +13,7 @@
         <!-- Cards -->
         <% for(var i=0; i <  courses.length; i++) { %>
         <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white">
-            <img class="w-full" src="https://via.placeholder.com/400x200" alt="Card Image 1">
+            <img class="w-full" src="<%= courses[i].course.photo ? courses[i].course.photo : '/images/default-course.png' %>" alt="Course Image">
             <div class="px-6 py-4">
                 <div class="font-bold text-xl mb-2"><%= courses[i].title %></div>
                 <div class="font-semibold text-l mb-1"><%= courses[i].educatorName %></div>

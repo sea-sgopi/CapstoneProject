@@ -14,7 +14,8 @@
         <!-- Cards -->
         <% for(var i=0; i < coursesWithEducator.length; i++) { %>
         <div class="course-card max-w-sm rounded overflow-hidden shadow-lg bg-white">
-            <img class="w-full" src="https://via.placeholder.com/400x200" alt="Course Image">
+            <!-- <img class="w-full" src="images/download.jpeg" alt="Course Image"> -->
+            <img class="w-full" src="<%= coursesWithEducator[i].course.photo ? coursesWithEducator[i].course.photo : '/images/default-course.png' %>" alt="Course Image">
             <div class="px-6 py-4">
                 <div class="font-bold text-xl mb-2"><%= coursesWithEducator[i].title %></div>
                 <div class="flex items-center justify-between mb-4">

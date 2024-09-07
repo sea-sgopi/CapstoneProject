@@ -10,6 +10,7 @@ const {
   Completion,
 } = require("./models");
 const path = require("path");
+const multer = require("multer");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
@@ -116,11 +117,90 @@ app.use(async (request, response, next) => {
   next();
 });
 
+// Set storage engine
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./public/uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname),
+    );
+  },
+});
+
+// Init upload
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 3000000 }, // 3MB
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  },
+}).single("photo");
+
+// Check file type
+
+function checkFileType(file, cb) {
+  const filetypes = /jpeg|jpg|png|gif/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb("Error: Images Only!");
+  }
+}
+
 // Route
 
 app.get("/", (request, response) => {
   response.render("index", {
     title: "Capstone Project",
+  });
+});
+
+app.get("/error/:statusCode", (req, res) => {
+  const statusCode = req.params.statusCode || 500;
+  let statusMessage = "";
+
+  switch (statusCode) {
+    case "400":
+      statusMessage = "Bad Request";
+      break;
+    case "401":
+      statusMessage = "Unauthorized";
+      break;
+    case "403":
+      statusMessage = "Forbidden";
+      break;
+    case "404":
+      statusMessage = "Page Not Found";
+      break;
+    case "405":
+      statusMessage = "Method Not Allowed";
+      break;
+    case "500":
+      statusMessage = "Internal Server Error";
+      break;
+    case "502":
+      statusMessage = "Bad Gateway";
+      break;
+    case "503":
+      statusMessage = "Service Unavailable";
+      break;
+    case "504":
+      statusMessage = "Gateway Timeout";
+      break;
+    default:
+      statusMessage = "Something Went Wrong";
+  }
+  res.render("error", {
+    statusCode: statusCode,
+    statusMessage: statusMessage,
   });
 });
 
@@ -225,7 +305,7 @@ app.get(
       }
     } catch (error) {
       console.error("error: ", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -264,7 +344,7 @@ app.get(
       }
     } catch (error) {
       console.error("error: ", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -363,19 +443,30 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
-    // Logic
-    try {
-      const course = await Course.create({
-        name: request.body.course,
-        educatorId: request.user.id,
-      });
-      request.flash("done", "Course has been created successfully.");
-      response.redirect(`/courses/${course.id}/chapters/new`);
-    } catch (error) {
-      console.error("Course creation error:", error);
-      request.flash("error", "An error occurred. Please try again.");
-      response.redirect("/courses/new");
-    }
+    upload(request, response, async (error) => {
+      if (error) {
+        response.render("new-course", { msg: error });
+      } else {
+        try {
+          const { course } = request.body;
+          const educatorId = request.user.id;
+          if (!course) {
+            return response.status(400).send("Course name is required");
+          }
+          const newCourse = await Course.create({
+            name: course,
+            educatorId,
+            photo: request.file ? `/uploads/${request.file.filename}` : null,
+          });
+          request.flash("done", "Course has been created successfully.");
+          response.redirect(`/courses/${newCourse.id}/chapters/new`);
+        } catch (error) {
+          console.error("Course creation error:", error);
+          request.flash("error", "An error occurred. Please try again.");
+          response.redirect("/courses/new");
+        }
+      }
+    });
   },
 );
 
@@ -402,7 +493,7 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading chapter creation page:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -454,7 +545,7 @@ app.get(
         "Error loading page creation form: or loading chapters:",
         error,
       );
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -503,7 +594,7 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading my courses:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -539,7 +630,7 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading courses chapters:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -576,7 +667,7 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading pages:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -607,7 +698,7 @@ app.get(
       });
     } catch (error) {
       console.error("Error loading pages:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -633,7 +724,7 @@ app.get(
       response.redirect(`/student-dashboard`); // need to change
     } catch (error) {
       console.error("Error loading my courses:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -662,6 +753,7 @@ app.get(
       const username = await User.username(studentId);
       const userRole = request.user.role;
       const coursesWithEducator = await Course.coursesWithEducator();
+      const count = await Enrollment.findEnrollmentsWithPopularity();
       response.render("enrolled-courses", {
         title: "My Courses",
         courses,
@@ -670,10 +762,11 @@ app.get(
         username,
         coursesWithEducator,
         userRole,
+        count,
       });
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -696,7 +789,7 @@ app.get(
       console.log(`Total Students: ${courses[0].totalStudents}`);
     } catch (error) {
       console.error("Error loading enrolled courses:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );
@@ -719,7 +812,7 @@ app.get(
       }
     } catch (error) {
       console.error("Error marking page as complete:", error);
-      response.status(500).send("Internal Server Error");
+      response.redirect("/error/500");
     }
   },
 );

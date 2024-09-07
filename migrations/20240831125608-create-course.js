@@ -1,5 +1,8 @@
 /* eslint-disable no-unused-vars */
 "use strict";
+
+const { sequelize } = require("../models");
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -14,6 +17,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
+      },
+      photo: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       educatorId: {
         type: Sequelize.INTEGER,

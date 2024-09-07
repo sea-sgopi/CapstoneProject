@@ -7,13 +7,30 @@
     <a href="/educator-dashboard">Dashboard</a> >
 </nav>
 
-<form class="px-40 py-4" action="/new-course" method="post">
+<form class="px-40 py-4" action="/new-course" method="post" enctype="multipart/form-data">
     <%- include('flash') %>
     <div class="py-3">
         <label for="course" class="text-xl">What is the name of this Course ?</label>
         <input type="text" name="course" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
     </div>
+    <div class="py-3">
+        <label for="photo" class="text-xl">Upload Course Photo</label>
+        <input type="file" name="photo" id="photo" class="hidden">
+        <label for="photo" class="inline-block bg-blue-400 text-white font-medium py-1 px-2 rounded cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Choose a File
+        </label>
+        <span id="file-name" class="ml-3 text-gray-600"></span>
+    </div>
     <div class="flex items-center justify-between py-3">
         <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded px-5 py-2">Submit</button>
     </div>
 </form>
+
+<script>
+    const fileInput = document.getElementById('photo');
+    const fileName = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', function() {
+        fileName.textContent = this.files[0] ? this.files[0].name : '';
+    });
+</script>

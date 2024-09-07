@@ -76,6 +76,7 @@ module.exports = (sequelize, DataTypes) => {
         return courses.map((course) => ({
           id: course.id,
           title: course.name,
+          photo: course.photo,
           educatorName: course.educator ? course.educator.fullName : "Unknown",
         }));
       } catch (error) {
@@ -93,6 +94,10 @@ module.exports = (sequelize, DataTypes) => {
       educatorId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      photo: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     {

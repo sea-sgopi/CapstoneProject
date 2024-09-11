@@ -151,7 +151,7 @@ function checkFileType(file, cb) {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb("Error: Images Only!");
+    cb(new Error("Error: Images Only! Image types acceptable are jpeg or jpg or png or gif "));
   }
 }
 
@@ -445,26 +445,27 @@ app.post(
   async (request, response) => {
     upload(request, response, async (error) => {
       if (error) {
-        response.render("new-course", { msg: error });
-      } else {
-        try {
-          const { course } = request.body;
-          const educatorId = request.user.id;
-          if (!course) {
-            return response.status(400).send("Course name is required");
-          }
-          const newCourse = await Course.create({
-            name: course,
-            educatorId,
-            photo: request.file ? `/uploads/${request.file.filename}` : null,
-          });
-          request.flash("done", "Course has been created successfully.");
-          response.redirect(`/courses/${newCourse.id}/chapters/new`);
-        } catch (error) {
-          console.error("Course creation error:", error);
-          request.flash("error", "An error occurred. Please try again.");
-          response.redirect("/courses/new");
+        request.flash("error", error.message);
+        return response.redirect("/new-course");
+      }
+      try {
+        const { course } = request.body;
+        const educatorId = request.user.id;
+        if (!course) {
+          request.flash("error", "Course name is required.")
+          return response.redirect("/new-course");
         }
+        const newCourse = await Course.create({
+          name: course,
+          educatorId,
+          photo: request.file ? `/uploads/${request.file.filename}` : null,
+        });
+        request.flash("done", "Course has been created successfully.");
+        response.redirect(`/courses/${newCourse.id}/chapters/new`);
+      } catch (error) {
+        console.error("Course creation error:", error);
+        request.flash("error", "An error occurred. Please try again.");
+        response.redirect("/courses/new");
       }
     });
   },

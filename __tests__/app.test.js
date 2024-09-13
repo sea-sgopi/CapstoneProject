@@ -59,9 +59,9 @@ describe("Capstone Project", () => {
   test("Create a new course", async () => {
     const cookieString = cookies.join("; ");
 
-    let res = await agent.get("/new-course").set("Cookie", cookieString);
+    let res = await agent.get("/courses/new").set("Cookie", cookieString);
     const courseResponse = await agent
-      .post("/new-course")
+      .post("/courses/new")
       .set("Cookie", cookieString)
       .field("course", "Test Course");
 
@@ -151,7 +151,7 @@ describe("Capstone Project", () => {
   test("Show the chapter's list of a Course", async () => {
     const cookieString = studentCookies.join("; ");
     const res = await agent
-      .get(`/viewCourses/${courseId}`)
+      .get(`/courses/${courseId}/chapters`)
       .set("Cookie", cookieString);
 
     expect(res.status).toBe(200);
@@ -161,7 +161,7 @@ describe("Capstone Project", () => {
   test("Allow a Student to enroll for a course", async () => {
     const cookieString = studentCookies.join("; ");
     let res = await agent
-      .get(`/enroll/${courseId}`)
+      .get(`/courses/${courseId}/enroll`)
       .set("Cookie", cookieString);
 
     expect(res.status).toBe(302);
@@ -174,7 +174,7 @@ describe("Capstone Project", () => {
   test("Show the Chapter's pages", async () => {
     const cookieString = studentCookies.join("; ");
     const res = await agent
-      .get(`/viewChapter/${chapterId}`)
+      .get(`/courses/${courseId}/chapters/${chapterId}`)
       .set("Cookie", cookieString);
 
     expect(res.status).toBe(200);
@@ -184,7 +184,7 @@ describe("Capstone Project", () => {
   test("Allow the Student to mark a page as complete", async () => {
     const cookieString = studentCookies.join("; ");
     let res = await agent
-      .get(`/mark-complete/${pageId}`)
+      .get(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}/markAsComplete`)
       .set("Cookie", cookieString);
 
     expect(res.status).toBe(302);

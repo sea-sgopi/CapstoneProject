@@ -558,12 +558,14 @@ app.post(
   async (request, response) => {
     // Logic
     try {
-      const { courseId, chapterId: defaultChapterId } = request.params;
+      const userId = request.user.id;
+      const {courseId, chapterId: defaultChapterId } = request.params;
       const chapterId = request.body.chapterId || defaultChapterId;
 
       await Page.create({
         title: request.body.title,
         content: request.body.content,
+        educatorId: userId,
         chapterId,
       });
 
@@ -587,11 +589,13 @@ app.get(
     try {
       const userId = request.user.id;
       const fullname = await User.fullname(userId);
+      const userRole = request.user.role;
       const myCourses = await Course.myCourses(userId);
       response.render("my-courses", {
         title: "My Courses",
         myCourses,
         fullname,
+        userRole
       });
     } catch (error) {
       console.error("Error loading my courses:", error);
@@ -609,6 +613,7 @@ app.get(
     try {
       const userRole = request.user.role;
       const courseId = request.params.courseId;
+      const course = await Course.findByPk(courseId);
       const courseName = await Course.courseFullName(courseId);
       const userId = request.user.id;
       const fullname = await User.fullname(userId);
@@ -617,10 +622,12 @@ app.get(
       const enrolled = await Enrollment.enrolledIds(userId);
       const total = await Enrollment.Enrollments(courseId);
       const chapters = await Chapter.findByCourseId(courseId);
+      const isOwned = await Course.isCourseOwnedByUser(courseId, userId);
       response.render("view-chapters", {
         title: "View Courses",
         chapters,
         courseId,
+        course,
         courseName,
         courses,
         fullname,
@@ -628,6 +635,7 @@ app.get(
         enroll,
         userRole,
         total,
+        isOwned,
       });
     } catch (error) {
       console.error("Error loading courses chapters:", error);
@@ -646,9 +654,9 @@ app.get(
       const userRole = request.user.role;
       const userId = request.user.id;
       const chapterId = request.params.chapterId;
-      const courseId = request.params.courseId;
-      console.log(`courseID === ${courseId}`);
+      const courseId = await Chapter.getCourseIdByChapterId(chapterId);
       const courses = await Enrollment.enrolledCourses(userId);
+      const isOwned = await Chapter.isChapterCreatedByUser(userId, chapterId);
       const isCompleted = await Chapter.isChapterCompleted(userId, chapterId);
       const chapter = await Chapter.findChapterWithPages(chapterId, {
         include: [Page],
@@ -658,12 +666,15 @@ app.get(
         return response.redirect(`/view-course/${chapter.courseId}`);
       }
       const pages = chapter.pages;
+      // console.log("Condition" , isOwned);
       response.render("view-pages", {
         title: `View Chapter: ${chapter.title}`,
         chapter,
         pages,
+        isOwned,
         userRole,
         courses,
+        courseId,
         isCompleted,
       });
     } catch (error) {

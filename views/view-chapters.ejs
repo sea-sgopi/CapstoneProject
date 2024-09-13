@@ -1,5 +1,13 @@
 <%- include('header') %>
 
+<nav class="text-m font-medium text-gray-700 flex items-center space-x-2">
+  <% if ( userRole === 'Educator') {%>
+  <a href="/educator-dashboard" class="text-blue-600 hover:text-blue-800">Dashboard</a>
+   <% } else { %>
+  <a href="/student-dashboard" class="text-blue-600 hover:text-blue-800">Dashboard</a>
+  <% } %>
+</nav>
+
 <h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
     Course Chapter 
 </h1>
@@ -46,6 +54,16 @@
 <div class="py-10">
 </div>
 
+<!-- <%= courseId %> -->
+<% if (userRole === 'Educator' && isOwned ) { %>
+  <div class="p-4 py-10">
+    <div class="bg-blue shadow-lg rounded-lg p-6 w-80 mx-auto">
+      <div class="text-center py-2">
+        <button onclick="window.location.href='/courses/<%= courseId %>/chapters/new';" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Add new chapter</button>
+      </div>
+    </div>
+  </div>
+<% } %>
 
 <% if(userRole === 'Student') { %>
   <div class="p-4 py-10">

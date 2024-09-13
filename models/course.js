@@ -84,6 +84,21 @@ module.exports = (sequelize, DataTypes) => {
         throw error;
       }
     }
+
+    static async isCourseOwnedByUser(courseId, userId) {
+      try {
+        const course = await Course.findOne({
+          where: {
+            id: courseId,
+            educatorId: userId,
+          },
+        });
+
+        return !!course;
+      } catch (error) {
+        console.error("Error checking the course ownership", error)
+      }
+    }
   }
   Course.init(
     {

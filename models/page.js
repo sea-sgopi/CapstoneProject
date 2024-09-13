@@ -2,6 +2,7 @@
 "use strict";
 const { Model, Op } = require("sequelize");
 const completion = require("./completion");
+const { use } = require("passport");
 module.exports = (sequelize, DataTypes) => {
   class Page extends Model {
     /**
@@ -13,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Page.belongsTo(models.Chapter, {
         foreignKey: "chapterId",
+      });
+      Page.belongsTo(models.User, {
+        foreignKey: "educatorId",
+        as: "creator",
       });
     }
 
@@ -89,6 +94,21 @@ module.exports = (sequelize, DataTypes) => {
         throw error;
       }
     }
+
+    static async isPageCreatedByUser(userId, pageId) {
+      try {
+        const page = await Page.findOne({
+          where: {
+            id: pageId,
+            educatorId: userId,
+          },
+        });
+
+        return !!page;
+      } catch (error) {
+        console.error("Error checking is the user created the page", error)
+      }
+    }
   }
   Page.init(
     {
@@ -102,6 +122,10 @@ module.exports = (sequelize, DataTypes) => {
       },
       content: {
         type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      educatorId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
     },

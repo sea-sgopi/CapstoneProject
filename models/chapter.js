@@ -100,6 +100,49 @@ module.exports = (sequelize, DataTypes) => {
         throw error;
       }
     }
+
+    static async isChapterCreatedByUser(userId, chapterId) {
+      try {
+        const chapter = await Chapter.findOne({
+          where: { id: chapterId },
+          include: {
+            model: sequelize.models.Course,
+            attributes: ['educatorId'], 
+          },
+        });
+    
+        if (!chapter) {
+          throw new Error(`Chapter with ID ${chapterId} not found`);
+        }
+    
+        const isCreatedByUser = chapter.Course && chapter.Course.educatorId === userId;
+        return isCreatedByUser; 
+    
+      } catch (error) {
+        console.error("Error checking if the user created the chapter:", error);
+        throw error;
+      }
+    }
+
+    static async getCourseIdByChapterId(chapterId) {
+      try {
+        const chapter = await Chapter.findOne({
+          where: {
+            id: chapterId
+          },
+          attributes: ['courseId'],
+        })
+
+        if(!chapter) {
+          throw new console.error(`Chapter with id ${chapterId} not found`); 
+        }
+
+        return chapter.courseId
+      } catch (error) {
+        console.error("Error fetching the courseid", error);
+      }
+    }
+    
   }
   Chapter.init(
     {

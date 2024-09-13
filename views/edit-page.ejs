@@ -1,0 +1,72 @@
+<%- include('header') %>
+
+<nav class="text-m font-medium text-gray-700 flex items-center space-x-2">
+    <a href="/educator-dashboard" class="text-blue-600 hover:text-blue-800">Dashboard</a>
+    <span class="text-gray-500">></span>
+    <a href="/courses/<%= courseId %>/chapters" class="text-blue-600 hover:text-blue-800"><%= course %></a>
+    <span class="text-gray-500">></span>
+    <a href="/courses/<%= courseId %>/chapters/<%= chapterId %>" class="text-blue-600 hover:text-blue-800"><%= page.title %></a>
+    <span class="text-gray-500">></span>
+    <span class="text-gray-500">Update Page</span>
+</nav>
+
+<h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
+   Edit Page :  <%= page.title %>
+</h1>
+
+<form class="px-40 py-4" action="/courses/<%= courseId %>/chapters/<%= chapterId %>/pages/<%= pageId %>/edit" method="post">
+    <%- include('flash') %>
+    
+    <div class="py-3">
+        <label for="chapter">Select Chapter:</label>
+        
+        <select id="chapter" name="chapterId" class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+            <% chapters.forEach(function(ch) { %>
+                <option value="<%= ch.id %>" <%= page.chapterId === ch.id ? 'selected' : '' %>><%= ch.title %></option>
+            <% }) %>
+        </select>
+    </div>
+
+    <div class="py-3">
+        <label for="title">Page Title:</label>
+        <input type="text" id="title" name="title" value="<%= page.title %>" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+    </div>
+    <div class="py-3">
+        <label for="content">Page Content:</label>
+        <div id="editor" class="border border-gray-300 text-gray-900 rounded p-2 w-full" style="height: 300px;"><%= page.content %></div>
+        <input type="hidden" name="content" id="content">
+    </div>
+    <script>
+        var quill = new Quill('#editor', {
+          theme: 'snow',
+          placeholder: 'Write your Page content here...',
+          modules: {
+            toolbar: [
+                [{ 'font': [] }, { 'size': [] }],
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link', 'image'],
+            ]
+          }
+        });
+        var content = `<%- page.content %>`;
+        quill.root.innerHTML = content;
+        quill.on('text-change', function() {
+          document.getElementById('content').value = quill.root.innerHTML;
+        });
+
+        // Set the initial content to the editor
+        document.getElementById('content').value = quill.root.innerHTML;
+    </script>
+    <div class="flex items-center justify-between py-3">
+            <a href="/courses/<%= courseId %>/chapters/<%= chapterId %>/pages" class="text-white bg-red-500 hover:bg-red-700 font-medium rounded px-5 py-2 no-underline">
+                Cancel
+            </a>
+        <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded px-5 py-2">Update Page</button>
+    </div>
+</form>

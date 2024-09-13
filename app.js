@@ -34,6 +34,7 @@ const { where } = require("sequelize");
 const { error } = require("console");
 const { title } = require("process");
 const { userInfo } = require("os");
+const chapter = require("./models/chapter");
 
 app.use(
   session({
@@ -427,7 +428,7 @@ app.get("/development", (request, response) => {
 });
 
 app.get(
-  "/new-course",
+  "/courses/new",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   (request, response) => {
@@ -439,21 +440,21 @@ app.get(
 );
 
 app.post(
-  "/new-course",
+  "/courses/new",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
   async (request, response) => {
     upload(request, response, async (error) => {
       if (error) {
         request.flash("error", error.message);
-        return response.redirect("/new-course");
+        return response.redirect("/courses/new");
       }
       try {
         const { course } = request.body;
         const educatorId = request.user.id;
         if (!course) {
           request.flash("error", "Course name is required.")
-          return response.redirect("/new-course");
+          return response.redirect("/courses/new");
         }
         const newCourse = await Course.create({
           name: course,
@@ -489,6 +490,7 @@ app.get(
 
       response.render("new-chapter", {
         course,
+        courseId,
         chapters,
         title: "Create Chapter",
       });
@@ -527,6 +529,77 @@ app.post(
 );
 
 app.get(
+  "/courses/:courseId/chapters/:chapterId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const { courseId, chapterId } = request.params;
+      const course = await Course.courseFullName(courseId);
+      const chapter = await Chapter.findOne({
+        where: {
+          id: chapterId,
+          courseId,
+        }
+      });
+      if(!chapter) {
+        request.flash("error", "Chapter not found")
+        return response.redirect(`courses/${courseId}`);
+      }
+
+      response.render("edit-chapter", {
+        title: "Edit Chapter",
+        chapter,
+        course,
+        courseId,
+        chapterId,
+      });
+    } catch (error) {
+      const { courseId, chapterId } = request.params;
+      console.error("Error fetching chapters", error);
+      request.flash("error", "An error occurred. Please try again.");
+      response.redirect(`/courses/${courseId}/chapters/${chapterId}/edit`);
+    }
+  },
+);
+
+app.post(
+  "/courses/:courseId/chapters/:chapterId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const { courseId, chapterId } = request.params;
+      const { title, description} = request.body;
+      const chapter = await Chapter.findOne({
+        where: {
+          id: chapterId,
+          courseId,
+        }
+      });
+      if(!chapter) {
+        request.flash("error", "Chapter not found")
+        return response.redirect(`/courses/${courseId}/chapters`);
+      }
+
+      chapter.title = title;
+      chapter.description = description;
+      await chapter.save();
+
+      request.flash("done", "Chapter updated successfully");
+      response.redirect(`/courses/${courseId}/chapters`)
+    } catch (error) {
+      const { courseId, chapterId } = request.params;
+      console.error("Error updating chapters", error);
+      request.flash("error", "An error occurred. Please try again.");
+      response.redirect(`/courses/${courseId}chapters/${chapterId}/edit`);
+    }
+  },
+);
+
+app.get(
   "/courses/:courseId/chapters/:chapterId/pages/new",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator"]),
@@ -539,6 +612,8 @@ app.get(
         course: await Course.findByPk(courseId),
         chapter: await Chapter.findByPk(chapterId),
         chapters,
+        courseId,
+        chapterId,
         title: "Add Page",
       });
     } catch (error) {
@@ -568,7 +643,6 @@ app.post(
         educatorId: userId,
         chapterId,
       });
-
       request.flash("done", "Page has been added successfully.");
       response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
     } catch (error) {
@@ -576,6 +650,92 @@ app.post(
       console.error("Page creation error:", error);
       request.flash("error", "An error occurred. Please try again.");
       response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/new`);
+    }
+  },
+);
+
+app.get(
+  "/courses/:courseId/chapters/:chapterId/pages/:pageId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const {courseId, chapterId, pageId } = request.params;
+      const course = await Course.courseFullName(courseId);
+      const page = await Page.findOne({
+        where: {
+          id: pageId,
+          chapterId,
+        },
+      });
+
+      if (!page) {
+        request.flash("error", "Page not found.");
+        return response.redirect(`/courses/${courseId}/chapters/${chapterId}`);
+      }
+
+      const chapters = await Chapter.findAll({
+        where:{
+          courseId,
+        },
+      })
+      
+      response.render('edit-page', {
+        title: "Edit Page",
+        page,
+        courseId,
+        course,
+        chapterId,
+        pageId,
+        chapters,
+        chapter: {id: chapterId},
+      })
+
+    } catch (error) {
+      const { courseId, chapterId,pageId } = request.params;
+      console.error("Error fetching pages:", error);
+      request.flash("error", "An error occurred. Please try again.");
+      response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}/edit`);
+    }
+  },
+);
+
+app.post(
+  "/courses/:courseId/chapters/:chapterId/pages/:pageId/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  requireRole(["Educator"]),
+  async (request, response) => {
+    // Logic
+    try {
+      const {courseId, chapterId: defaultChapterId, pageId } = request.params;
+      const chapterId = request.body.chapterId || defaultChapterId;
+      const { title, content } = request.body;
+
+      const page = await Page.findOne({
+        where: {
+          id: pageId,
+          chapterId: defaultChapterId,
+        },
+      });
+
+      if(!page) {
+        request.flash("error", "Page not found");
+        return response.redirect(`/courses/${courseId}/chapters/${chapterId}`)
+      }
+
+      page.title = title;
+      page.content = content;
+      page.chapterId = chapterId;
+      await page.save();
+
+      request.flash("done", "Page updated successfully.");
+      response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}`)
+    } catch (error) {
+      const { courseId, chapterId,pageId } = request.params;
+      console.error("Page update error", error);
+      request.flash("error", "An error occurred. Please try again.");
+      response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}/edit`);
     }
   },
 );
@@ -605,7 +765,7 @@ app.get(
 );
 
 app.get(
-  "/view-chapters/:courseId",
+  "/courses/:courseId/chapters",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator", "Student"]),
   async (request, response) => {
@@ -623,7 +783,7 @@ app.get(
       const total = await Enrollment.Enrollments(courseId);
       const chapters = await Chapter.findByCourseId(courseId);
       const isOwned = await Course.isCourseOwnedByUser(courseId, userId);
-      response.render("view-chapters", {
+      response.render("chapterList", {
         title: "View Courses",
         chapters,
         courseId,
@@ -645,7 +805,7 @@ app.get(
 );
 
 app.get(
-  "/view-pages/:chapterId",
+  "/courses/:courseId/chapters/:chapterId/",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Educator", "Student"]),
   async (request, response) => {
@@ -653,8 +813,7 @@ app.get(
     try {
       const userRole = request.user.role;
       const userId = request.user.id;
-      const chapterId = request.params.chapterId;
-      const courseId = await Chapter.getCourseIdByChapterId(chapterId);
+      const {courseId, chapterId} = request.params;
       const courses = await Enrollment.enrolledCourses(userId);
       const isOwned = await Chapter.isChapterCreatedByUser(userId, chapterId);
       const isCompleted = await Chapter.isChapterCompleted(userId, chapterId);
@@ -663,13 +822,14 @@ app.get(
       });
       if (!chapter) {
         request.flash("error", "Chapter Not Found");
-        return response.redirect(`/view-course/${chapter.courseId}`);
+        return response.redirect(`/courses/${courseId}`);
       }
       const pages = chapter.pages;
-      // console.log("Condition" , isOwned);
-      response.render("view-pages", {
+      console.log("Chapter Data:", chapter);
+      response.render("pageList", {
         title: `View Chapter: ${chapter.title}`,
         chapter,
+        chapterId,
         pages,
         isOwned,
         userRole,
@@ -685,27 +845,32 @@ app.get(
 );
 
 app.get(
-  "/view-page/:pageId",
+  "/courses/:courseId/chapters/:chapterId/pages/:pageId",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Student", "Educator"]),
   async (request, response) => {
     // Logic
     try {
       const studentId = request.user.id;
-      const pageId = request.params.pageId;
+      const { courseId, chapterId ,pageId} = request.params;
       const userRole = request.user.role;
       const page = await Page.findByPk(pageId);
       const nextId = await Page.findNextPageId(pageId);
+      const isOwned = await Page.isPageCreatedByUser(studentId, pageId);
       const isCompleted = await Page.isPageCompleted(studentId, pageId);
       if (!page) {
         request.flash("error", "Page Not Found");
         return response.redirect(`/error`);
       }
-      response.render("view-page", {
+      response.render("pageContent", {
         title: `${page.title}`,
         page,
+        pageId,
+        courseId,
+        chapterId,
         isCompleted,
         userRole,
+        isOwned,
         nextId,
       });
     } catch (error) {
@@ -716,7 +881,7 @@ app.get(
 );
 
 app.get(
-  "/enroll/:courseId",
+  "/courses/:courseId/enroll",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Student"]),
   async (request, response) => {
@@ -758,8 +923,17 @@ app.get(
           studentId,
           course.courseId,
         );
-        course.nextPageId = nextPage ? nextPage.id : null;
+
+        if(nextPage) {
+          course.nextPageId = nextPage.id;
+          course.chapterId = await Page.getChapterIdFromNextPage(nextPage.id)
+        }
+        else {
+          course.nextPageId = null;
+          course.chapterId = null;
+        }
       }
+
       const enrolled = await Enrollment.enrolledIds(studentId);
       const fullname = await User.fullname(studentId);
       const username = await User.username(studentId);
@@ -807,20 +981,20 @@ app.get(
 );
 
 app.get(
-  "/mark-complete/:pageId",
+  "/courses/:courseId/chapters/:chapterId/pages/:pageId/markAsComplete",
   connectEnsureLogin.ensureLoggedIn(),
   requireRole(["Student"]),
   async (request, response) => {
     try {
       const studentId = request.user.id;
-      const pageId = request.params.pageId;
+      const {courseId,chapterId, pageId} = request.params;
       const completion = await Completion.markAsComplete(studentId, pageId);
       if (!completion) {
         request.flash("error", "Completion record not found");
-        return response.redirect(`/view-page/${pageId}`);
+        return response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}`);
       } else {
         request.flash("done", "Completed");
-        return response.redirect(`/view-page/${pageId}`);
+        return response.redirect(`/courses/${courseId}/chapters/${chapterId}/pages/${pageId}`);
       }
     } catch (error) {
       console.error("Error marking page as complete:", error);

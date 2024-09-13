@@ -1,11 +1,11 @@
   <%- include('header') %>
 
-<nav class="text-m font-medium text-gray-700 flex items-center space-x-2">
+  <nav class="text-m font-medium text-gray-700 flex items-center space-x-2">
     <a href="/educator-dashboard" class="text-blue-600 hover:text-blue-800">Dashboard</a>
     <span class="text-gray-500">></span>
-    <a href="/view-chapters/<%= course.id %>" class="text-blue-600 hover:text-blue-800"><%= course.name %></a>
+    <a href="/courses/<%= courseId %>/chapters" class="text-blue-600 hover:text-blue-800"><%= course.name %></a>
     <span class="text-gray-500">></span>
-    <span class="text-gray-500">Add New Chapter</span>
+    <span class="text-gray-500">Add A New Chapter</span>
 </nav>
 
 <h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">

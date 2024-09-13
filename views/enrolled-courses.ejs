@@ -25,8 +25,8 @@
             </div>
             <div class="px-6 pt-4 pb-2 flex justify-between">
                 <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Completed : <%= courses[i].progress %>%</button>
-                <% if (courses[i].nextPageId) { %>
-                    <button onclick="window.location.href='/view-page/<%= courses[i].nextPageId %>';" class="bg-cyan-500 hover:bg-cyan-600 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">
+                <% if (courses[i].nextPageId && courses[i].chapterId) { %>
+                    <button onclick="window.location.href='/courses/<%= courses[i].courseId %>/chapters/<%= courses[i].chapterId %>/pages/<%= courses[i].nextPageId %>';" class="bg-cyan-500 hover:bg-cyan-600 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                             <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 10.28a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 1 0-1.06 1.06l1.72 1.72H8.25a.75.75 0 0 0 0 1.5h5.69l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3Z" clip-rule="evenodd" />
                           </svg>                           
@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<%- include('view-courses') %>
+<%- include('availableCourses') %>
 
 <div class="px-20 py-60">
     <%- include('footer') %>

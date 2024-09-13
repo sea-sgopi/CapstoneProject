@@ -151,7 +151,7 @@ describe("Capstone Project", () => {
   test("Show the chapter's list of a Course", async () => {
     const cookieString = studentCookies.join("; ");
     const res = await agent
-      .get(`/view-chapters/${courseId}`)
+      .get(`/viewCourses/${courseId}`)
       .set("Cookie", cookieString);
 
     expect(res.status).toBe(200);
@@ -174,7 +174,7 @@ describe("Capstone Project", () => {
   test("Show the Chapter's pages", async () => {
     const cookieString = studentCookies.join("; ");
     const res = await agent
-      .get(`/view-pages/${chapterId}`)
+      .get(`/viewChapter/${chapterId}`)
       .set("Cookie", cookieString);
 
     expect(res.status).toBe(200);

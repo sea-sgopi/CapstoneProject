@@ -1,0 +1,42 @@
+<%- include('header') %>
+
+<nav class="text-m font-medium text-gray-700 flex items-center space-x-2">
+    <a href="/educator-dashboard" class="text-blue-600 hover:text-blue-800">Dashboard</a>
+    <span class="text-gray-500">></span>
+    <a href="/courses/<%= courseId %>/chapters" class="text-blue-600 hover:text-blue-800"><%= course %></a>
+    <span class="text-gray-500">></span>
+    <a href="/courses/<%= courseId %>/chapters/<%= chapterId %>" class="text-blue-600 hover:text-blue-800"><%= chapter.title %></a>
+    <span class="text-gray-500">></span>
+    <span class="text-gray-500">Update Chapter</span>
+</nav>
+
+<h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
+    Update Chapter from <%= chapter.title  %>
+</h1>
+    
+
+
+<form class="px-40 py-4" action="/courses/<%= courseId %>/chapters/<%= chapter.id %>/edit" method="post">
+    <div class="py-3">
+        <label for="title">Chapter Title:</label>
+        <input type="text" id="title" name="title" value="<%= chapter.title %>" required class="border border-gray-300 text-gray-900 rounded p-2 w-full">
+    </div>
+    <div class="py-3">
+        <label for="description">Chapter Description:</label>
+        <textarea id="description" name="description" required class="border border-gray-300 text-gray-900 rounded p-2 w-full"><%= chapter.description %></textarea>
+    </div>
+    <div class="flex items-center justify-between py-3">
+        <a href="/..">
+            <button type="submit" class="text-white bg-red-500 hover:bg-red-700 font-medium rounded px-5 py-2">
+                Cancel
+            </button>
+        </a>
+        <button type="submit" class="text-white bg-blue-500 hover:bg-blue-700 font-medium rounded px-5 py-2">
+            Update Chapter
+        </button>
+    </div>
+</form>
+
+<div class="px-20 py-60">
+    <%- include('footer.ejs') %>
+</div>

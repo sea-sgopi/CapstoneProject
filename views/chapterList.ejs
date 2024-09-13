@@ -11,7 +11,7 @@
 <h1 class="text-2xl py-10 font-bold text-center  p-4 rounded-lg">
     Course Chapter 
 </h1>
-<!--  course chapter replace with course Name  above -->
+
 
 <div class="container mx-auto py-8">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">Chapters</h1>
@@ -23,7 +23,14 @@
                   <p class="text-gray-600 mt-2"><%= chapters[i].description %></p>
                 </div>
                 <% if(userRole === 'Educator') { %>
-                  <a href="/view-pages/<%= chapters[i].id %>">
+                  <% if ( isOwned ) { %>
+                    <a href="/courses/<%= courseId %>/chapters/<%= chapters[i].id %>/edit">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                        <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.513 8.2Z" />
+                      </svg>                    
+                    </a>
+                  <% } %>
+                  <a href="/courses/<%= courseId %>/chapters/<%= chapters[i].id %>/">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
@@ -33,7 +40,7 @@
                 { %>
                   <!-- Student  -->
                   <% if (enrolled.includes(Number(courseId))) { %>
-                    <a href="/view-pages/<%= chapters[i].id %>">
+                    <a href="/courses/<%= courseId %>/chapters/<%= chapters[i].id %>/">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                       </svg>
@@ -84,7 +91,7 @@
         <% if ( enroll) { %>
           <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Already Enrolled</button>   
       <% } else { %>
-          <button onclick="window.location.href='/enroll/<%= courseId %>';" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Enroll</button>
+          <button onclick="window.location.href='/courses/<%= courseId %>/enroll';" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded font-medium mr-2 mb-2 ">Enroll</button>
       <% } %>
       </div>
     </div>

@@ -109,6 +109,25 @@ module.exports = (sequelize, DataTypes) => {
         console.error("Error checking is the user created the page", error)
       }
     }
+
+    static async getChapterIdFromNextPage(nextId) {
+      try {
+        const page = await sequelize.models.Page.findOne({
+          where: {
+            id: nextId,
+          },
+          attributes: ['chapterId']
+        });
+
+        if(!page) {
+          console.error("Page not found from the nextid")
+        }
+
+        return page.chapterId;
+      } catch (error) {
+        console.error("error fetching chapterid from the pageid", error);
+      }
+    }
   }
   Page.init(
     {
